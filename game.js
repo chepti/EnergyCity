@@ -127,20 +127,63 @@ function buildBoard() {
   board.style.width = boardW + "px";
   board.style.height = boardH + "px";
 
-  // אי חולי מתחת לעיר
-  const m = 70;                       // שוליים אופקיים של החוף
-  const gTop = TILE_DIV_H - 93;       // ראש מעוין הקרקע של המשבצת הראשונה
-  const iw = boardW + 2 * m, ih = n * TH + m + 24;
+  // חצי־אי אורגני מתחת לעיר — קו חוף לא אחיד, מזח, סירה ואיון
+  const gTop = TILE_DIV_H - 93;                    // ראש מעוין הקרקע העליון
+  const icx = boardW / 2, icy = gTop + (n * TH) / 2;
+  const irx = boardW / 2, iry = (n * TH) / 2;
+  const margins = [72, 96, 58, 112, 82, 138, 100, 74, 64, 108, 86, 58, 92, 124, 68, 94];
+  const K = margins.length;
+  const coastPt = (k, frac) => {                   // נקודה במרחק frac מרוחב החוף מעבר למעוין
+    const a = (k / K) * Math.PI * 2;
+    const c = Math.cos(a), s = Math.sin(a);
+    const rd = 1 / (Math.abs(c) / irx + Math.abs(s) / iry);
+    const r = rd + margins[k] * frac;
+    return [icx + c * r, icy + s * r];
+  };
+  const pathFor = frac => {
+    const p = [...Array(K).keys()].map(k => coastPt(k, frac));
+    let d = `M ${(p[0][0] + p[K - 1][0]) / 2},${(p[0][1] + p[K - 1][1]) / 2}`;
+    for (let k = 0; k < K; k++) {
+      const cur = p[k], nx = p[(k + 1) % K];
+      d += ` Q ${cur[0]},${cur[1]} ${(cur[0] + nx[0]) / 2},${(cur[1] + nx[1]) / 2}`;
+    }
+    return d + " Z";
+  };
+  const treeAt = (k, sc) => {
+    const [x, y] = coastPt(k, 0.4);
+    return `<g transform="translate(${x},${y}) scale(${sc})">
+      <rect x="-1.5" y="-2" width="3" height="9" fill="#7a5230"/>
+      <circle cx="0" cy="-7" r="8" fill="#3e9440"/><circle cx="-5" cy="-3" r="5" fill="#4ca64c"/></g>`;
+  };
+  const bushAt = (k, sc) => {
+    const [x, y] = coastPt(k, 0.55);
+    return `<g transform="translate(${x},${y}) scale(${sc})"><circle r="5" fill="#5cbf5a"/><circle cx="5" cy="2" r="3.5" fill="#6fd06d"/></g>`;
+  };
+  const [px, py] = coastPt(4, 0.9);                // תחתית — שם המזח
+  const pad = 175;
   const island = document.createElement("div");
   island.className = "island";
-  island.style.cssText = `position:absolute;left:${-m}px;top:${gTop - m / 2}px;width:${iw}px;height:${ih}px;z-index:0;pointer-events:none;`;
-  island.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 ${iw} ${ih}" preserveAspectRatio="none">
-    <polygon points="${iw / 2},0 ${iw},${ih / 2} ${iw / 2},${ih} 0,${ih / 2}"
-      fill="rgba(255,255,255,.22)" transform="translate(0,14)"/>
-    <polygon points="${iw / 2},0 ${iw},${ih / 2} ${iw / 2},${ih} 0,${ih / 2}"
-      fill="#eed985" stroke="#f7efb8" stroke-width="5" stroke-linejoin="round"/>
-    <polygon points="${iw / 2},14 ${iw - 26},${ih / 2} ${iw / 2},${ih - 14} 26,${ih / 2}"
-      fill="#e2c96a" opacity=".55"/>
+  island.style.cssText = `position:absolute;left:${-pad}px;top:${gTop - pad}px;width:${boardW + 2 * pad}px;height:${n * TH + 2 * pad}px;z-index:0;pointer-events:none;`;
+  island.innerHTML = `<svg width="100%" height="100%" viewBox="${-pad} ${gTop - pad} ${boardW + 2 * pad} ${n * TH + 2 * pad}">
+    <path d="${pathFor(1.18)}" fill="rgba(255,255,255,.17)"/>
+    <path d="${pathFor(1)}" fill="#eed985" stroke="rgba(255,255,255,.6)" stroke-width="4"/>
+    <path d="${pathFor(0.88)}" fill="#8ac263"/>
+    ${treeAt(1, 0.9)}${treeAt(3, 0.75)}${treeAt(7, 0.85)}${treeAt(10, 0.7)}${treeAt(13, 0.95)}${treeAt(15, 0.7)}
+    ${bushAt(2, 1)}${bushAt(6, 0.9)}${bushAt(9, 1.1)}${bushAt(12, 0.8)}${bushAt(14, 1)}
+    <g transform="translate(${px},${py}) rotate(16)">
+      <rect x="-7" y="-6" width="14" height="66" rx="3" fill="#b98a52" stroke="#8a6a3e" stroke-width="1.5"/>
+      <g stroke="#8a6a3e" stroke-width="2">
+        <line x1="-7" y1="8" x2="7" y2="8"/><line x1="-7" y1="20" x2="7" y2="20"/>
+        <line x1="-7" y1="32" x2="7" y2="32"/><line x1="-7" y1="44" x2="7" y2="44"/>
+      </g>
+    </g>
+    <g transform="translate(${px + 40},${py + 42})">
+      <ellipse rx="17" ry="6" fill="#c9553e"/><ellipse cy="-2" rx="12" ry="3" fill="#e8eef4"/>
+    </g>
+    <g transform="translate(${icx + irx + 108},${gTop + 4})">
+      <ellipse rx="27" ry="12" fill="#eed985"/><ellipse rx="16" ry="7" fill="#86c161"/>
+      <rect x="2" y="-8" width="2.5" height="7" fill="#7a5230"/><circle cx="3" cy="-11" r="5.5" fill="#3e9440"/>
+    </g>
   </svg>`;
   board.appendChild(island);
 

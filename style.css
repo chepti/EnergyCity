@@ -20,7 +20,9 @@ body {
   font-family: "Varela Round", "Segoe UI", "Arial Hebrew", Arial, sans-serif;
   color: var(--ink);
   background-color: var(--sea);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg fill='%233c8a85'%3E%3Cpath d='M30 22l6 12h-12z'/%3E%3Ccircle cx='30' cy='38' r='2'/%3E%3Cpath d='M118 96l6 12h-12z'/%3E%3Ccircle cx='118' cy='112' r='2'/%3E%3Cpath d='M76 140l5 10h-10z'/%3E%3C/g%3E%3Cg stroke='%23428f8a' stroke-width='2.5' stroke-linecap='round' fill='none'%3E%3Cpath d='M96 40q6-5 12 0'/%3E%3Cpath d='M20 120q6-5 12 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cg stroke='%23ffffff' stroke-opacity='.13' stroke-width='3' stroke-linecap='round' fill='none'%3E%3Cpath d='M24 44q11-9 22 0t22 0'/%3E%3Cpath d='M150 100q11-9 22 0t22 0'/%3E%3Cpath d='M60 180q11-9 22 0t22 0'/%3E%3Cpath d='M190 224q9-7 18 0'/%3E%3Cpath d='M10 240q9-7 18 0'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='.07'%3E%3Ccircle cx='110' cy='26' r='2.5'/%3E%3Ccircle cx='34' cy='120' r='2'/%3E%3Ccircle cx='226' cy='160' r='2.5'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(180deg, #55aaa3 0%, #4a9d97 45%, #3d8b85 100%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -349,12 +351,31 @@ body {
   box-shadow: 22px 8px 0 -4px rgba(255,255,255,.8), -22px 10px 0 -6px rgba(255,255,255,.75);
   animation: drift linear infinite;
 }
-.cloud.c1 { width: 90px; height: 26px; top: 9%; animation-duration: 75s; }
-.cloud.c2 { width: 60px; height: 19px; top: 22%; animation-duration: 105s; animation-delay: -40s; }
-.cloud.c3 { width: 110px; height: 30px; top: 68%; animation-duration: 90s; animation-delay: -70s; opacity: .6; }
+.cloud.c1 { width: 90px; height: 26px; top: 7%; animation-duration: 75s; }
+.cloud.c2 { width: 60px; height: 19px; top: 18%; animation-duration: 105s; animation-delay: -40s; }
+.cloud.c3 { width: 110px; height: 30px; top: 12%; animation-duration: 90s; animation-delay: -70s; opacity: .6; }
 @keyframes drift {
   from { right: -140px; }
   to { right: calc(100% + 140px); }
+}
+
+/* סירת מפרש בים */
+.boat {
+  position: absolute;
+  width: 62px;
+  top: 74%;
+  z-index: 0;
+  pointer-events: none;
+  animation: sail 130s linear infinite;
+}
+.boat svg { animation: bob 3.2s ease-in-out infinite alternate; }
+@keyframes sail {
+  from { left: -90px; }
+  to { left: calc(100% + 90px); }
+}
+@keyframes bob {
+  from { transform: rotate(-2.5deg) translateY(0); }
+  to { transform: rotate(2.5deg) translateY(-3px); }
 }
 
 /* טוסטים */
