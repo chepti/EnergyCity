@@ -5,16 +5,19 @@
 const TILES = {
   house:   { name: "שכונת בתים",        cat: "מגורים",  icon: "s-house",   cost: 100, fx: { sat: 2, eco: 1, eng: -1 } },
   apts:    { name: "בנייני מגורים",      cat: "מגורים",  icon: "s-apts",    cost: 150, fx: { sat: 1, eco: 2, pol: 1, eng: -2 } },
+  luxury:  { name: "מגדלי יוקרה",        cat: "מגורים",  icon: "s-luxury",  cost: 320, unlock: 10, fx: { sat: 3, eco: 3, eng: -3 } },
   office:  { name: "מגדל משרדים",        cat: "תעסוקה",  icon: "s-office",  cost: 180, fx: { eco: 3, eng: -2 } },
   factory: { name: "מפעל",               cat: "תעסוקה",  icon: "s-factory", cost: 200, fx: { sat: -1, eco: 4, pol: 2, eng: -2 } },
   mall:    { name: "מרכז מסחרי",         cat: "תעסוקה",  icon: "s-mall",    cost: 160, fx: { sat: 1, eco: 2, pol: 1, eng: -2 } },
+  hitech:  { name: "קריית היי־טק",       cat: "תעסוקה",  icon: "s-hitech",  cost: 380, unlock: 15, fx: { sat: 1, eco: 6, eng: -4 } },
   park:    { name: "פארק",               cat: "פנאי",    icon: "s-park",    cost: 60,  fx: { sat: 2, pol: -2 } },
   sport:   { name: "מגרש ספורט",         cat: "פנאי",    icon: "s-sport",   cost: 100, fx: { sat: 3, eng: -1 } },
-  coal:    { name: "תחנת כוח פחמית",     cat: "אנרגיה",  icon: "s-coal",    cost: 120, fx: { eco: 1, pol: 3, eng: 5 } },
-  gas:     { name: "תחנת כוח בגז",       cat: "אנרגיה",  icon: "s-gas",     cost: 180, fx: { eco: 1, pol: 2, eng: 4 } },
+  luna:    { name: "לונה פארק",          cat: "פנאי",    icon: "s-luna",    cost: 280, unlock: 10, fx: { sat: 5, pol: 1, eng: -2 } },
+  coal:    { name: "תחנת כוח פחמית",     cat: "אנרגיה",  icon: "s-coal",    cost: 120, fx: { eco: 1, pol: 3, eng: 6 } },
+  gas:     { name: "תחנת כוח בגז",       cat: "אנרגיה",  icon: "s-gas",     cost: 200, fx: { eco: 1, pol: 1, eng: 5 } },
   solar:   { name: "שדה סולארי",         cat: "אנרגיה",  icon: "s-solar",   cost: 220, unlock: 5,  fx: { eng: 2 } },
   wind:    { name: "טורבינות רוח",       cat: "אנרגיה",  icon: "s-wind",    cost: 280, unlock: 10, fx: { eng: 3 } },
-  nuclear: { name: "תחנת כוח גרעינית",   cat: "אנרגיה",  icon: "s-nuclear", cost: 550, unlock: 20, fx: { sat: -1, eco: 1, eng: 7 } },
+  nuclear: { name: "תחנת כוח גרעינית",   cat: "אנרגיה",  icon: "s-nuclear", cost: 550, unlock: 20, fx: { sat: -1, eco: 1, eng: 8 } },
 };
 const CATS = ["מגורים", "תעסוקה", "פנאי", "אנרגיה"];
 const GREEN = ["solar", "wind", "nuclear"];
@@ -159,6 +162,7 @@ function renderTile(i) {
   el.querySelector("svg.bld")?.remove();
   el.title = "";
   el.classList.remove("pop");
+  el.classList.toggle("hasb", !!key);
   if (key) {
     const t = TILES[key];
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -179,28 +183,81 @@ function updateTileCursors() {
   });
 }
 
-function onTileClick(i) {
-  if (S.phase !== "build" || !S.tool) return;
-  if (S.tool === "bulldoze") {
-    const key = S.grid[i];
-    if (!key) return;
-    const refund = Math.floor(TILES[key].cost / 2);
-    S.grid[i] = null;
-    S.money += refund;
-    renderTile(i);
-    toast(`🚜 נהרס — קיבלתם החזר של ${refund} 💰`);
-  } else {
-    if (S.grid[i]) return;
-    const t = TILES[S.tool];
-    if (t.cost > S.money) { toast("אין מספיק כסף! 💰"); return; }
-    S.money -= t.cost;
-    S.grid[i] = S.tool;
-    renderTile(i);
-    tileEl(i).classList.add("pop");
-  }
-  updateWallet();
-  renderShop();
+function refundFor(key) {
+  // בבנייה הראשונית (שנה 0) ההחזר מלא, אחר כך 50%
+  return S.year === 0 ? TILES[key].cost : Math.floor(TILES[key].cost / 2);
 }
+
+function onTileClick(i) {
+  hideTileInfo();
+  const key = S.grid[i];
+
+  if (S.phase === "build") {
+    if (S.tool === "bulldoze") {
+      if (!key) return;
+      const refund = refundFor(key);
+      S.grid[i] = null;
+      S.money += refund;
+      renderTile(i);
+      toast(`🚜 נהרס — קיבלתם החזר של ${refund} 💰`);
+      updateWallet();
+      renderShop();
+      return;
+    }
+    if (S.tool) {
+      if (key) { showTileInfo(i); return; }
+      const t = TILES[S.tool];
+      if (t.cost > S.money) { toast("אין מספיק כסף! 💰"); return; }
+      S.money -= t.cost;
+      S.grid[i] = S.tool;
+      renderTile(i);
+      tileEl(i).classList.add("pop");
+      updateWallet();
+      renderShop();
+      return;
+    }
+    if (key) showTileInfo(i);
+    else toast("בחרו קודם מבנה מרשימת הבנייה 🔨");
+    return;
+  }
+
+  if (key) showTileInfo(i);
+}
+
+/* ---------- כרטיס מידע על מבנה ---------- */
+function showTileInfo(i) {
+  const key = S.grid[i];
+  if (!key) return;
+  const t = TILES[key];
+  const panel = $("#tile-info");
+  const rows = Object.entries(t.fx).filter(([, v]) => v).map(([k, v]) => {
+    const good = k === "pol" ? v < 0 : v > 0;
+    return `<li><span>${METER_META[k].emoji(v)} ${METER_META[k].label}</span><b class="${good ? "plus" : "minus"}">${v > 0 ? "+" : ""}${v}</b></li>`;
+  }).join("");
+  panel.innerHTML = `
+    <div class="ti-head"><svg viewBox="0 0 100 100"><use href="#${t.icon}"/></svg><span>${t.name}</span><button class="ti-close">✕</button></div>
+    <div class="ti-sub">השפעה על העיר בכל שנה:</div>
+    <ul class="ti-fx">${rows}</ul>
+    ${S.phase === "build" ? `<div class="ti-cost">🚜 הריסה תחזיר ${refundFor(key)} 💰</div>` : ""}`;
+  panel.classList.remove("hidden");
+  panel.querySelector(".ti-close").addEventListener("click", hideTileInfo);
+
+  const r = tileEl(i).getBoundingClientRect();
+  const pw = 240;
+  const x = clamp(r.left + r.width / 2 - pw / 2, 8, window.innerWidth - pw - 8);
+  let y = r.top - panel.offsetHeight - 6;
+  if (y < 62) y = r.bottom - 30;
+  panel.style.left = x + "px";
+  panel.style.top = y + "px";
+}
+
+function hideTileInfo() {
+  $("#tile-info").classList.add("hidden");
+}
+
+document.addEventListener("click", e => {
+  if (!e.target.closest("#tile-info") && !e.target.closest(".tile")) hideTileInfo();
+});
 
 /* ---------- חנות ---------- */
 function renderShop() {
@@ -233,6 +290,7 @@ function renderShop() {
 }
 
 function enterBuild(first) {
+  hideTileInfo();
   S.phase = "build";
   S.tool = null;
   $("#shop").classList.remove("hidden");
@@ -244,6 +302,7 @@ function enterBuild(first) {
 }
 
 function exitBuild() {
+  hideTileInfo();
   S.phase = "idle";
   S.tool = null;
   $("#shop").classList.add("hidden");
@@ -370,6 +429,7 @@ function showDecision(dec) {
 async function nextYear() {
   if (S.busy) return;
   S.busy = true;
+  hideTileInfo();
   $("#btn-next-year").classList.add("hidden");
 
   // החלטת מועצה
@@ -466,7 +526,7 @@ function endGame(won, reason) {
 /* ---------- אתחול ---------- */
 function startGame(size) {
   S.size = size;
-  S.money = size === 3 ? 600 : 800;
+  S.money = size === 3 ? 1200 : 2000;
   S.meters = { sat: 50, eco: 50, pol: 30, eng: 50 };
   S.year = 0;
   S.decisionPool = shuffle([...DECISIONS.keys()]);
@@ -476,7 +536,7 @@ function startGame(size) {
   updateWallet();
   $("#overlay").classList.add("hidden");
   $("#modal-start").classList.add("hidden");
-  toast("🔨 בנו את העיר הראשונה שלכם, ואז לחצו על ✅ סיום בנייה");
+  toast("🔨 מלאו את כל המשבצות במבנים, ואז לחצו על ✅ סיום בנייה");
   enterBuild(true);
 }
 
@@ -484,7 +544,8 @@ document.querySelectorAll(".size-btns button").forEach(b =>
   b.addEventListener("click", () => startGame(+b.dataset.size)));
 
 $("#btn-done-build").addEventListener("click", () => {
-  if (!S.grid.some(Boolean)) { toast("בנו לפחות מבנה אחד! 🔨"); return; }
+  const empty = S.grid.filter(k => !k).length;
+  if (empty) { toast(`יש למלא את כל המשבצות! נשארו ${empty} פנויות 🔨`); return; }
   if (!S.grid.some(k => TILES[k]?.fx.eng > 0)) { toast("⚡ אין לעיר מקור אנרגיה! בנו תחנת כוח"); return; }
   exitBuild();
 });

@@ -222,9 +222,11 @@ body {
   position: absolute;
   width: 150px;
   height: 180px;
-  cursor: default;
+  pointer-events: none; /* רק המעוין עצמו לחיץ — מונע חטיפת קליקים בין משבצות */
 }
-.tile svg.ground { position: absolute; bottom: 0; left: 0; width: 150px; height: 93px; }
+.tile svg.ground { position: absolute; bottom: 0; left: 0; width: 150px; height: 93px; pointer-events: none; }
+.tile .g-top { pointer-events: auto; }
+.tile.hasb .g-top, .tile.placeable .g-top, .tile.demolish .g-top { cursor: pointer; }
 .tile svg.bld {
   position: absolute;
   bottom: 30px;
@@ -235,11 +237,10 @@ body {
   filter: drop-shadow(0 3px 3px rgba(30,50,40,.25));
   transition: transform .2s;
 }
-.tile.placeable { cursor: pointer; }
 .tile.placeable .g-top { fill: #d8f0b8; }
 .tile.placeable:hover .g-top { fill: #ffe9a8; }
-.tile.demolish { cursor: pointer; }
 .tile.demolish:hover .g-top { fill: #ffc4bd; }
+.tile.hasb:hover svg.bld { transform: translateY(-3px); }
 .tile.pop svg.bld { animation: popIn .45s cubic-bezier(.5,1.6,.5,1); }
 @keyframes popIn {
   0% { transform: scale(.2) translateY(30px); }
@@ -256,6 +257,7 @@ body {
 }
 .rotor { animation: spin 3.2s linear infinite; }
 .rotor.r2 { animation-duration: 4.1s; }
+.wheel { animation: spin 10s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .flame { animation: flick .5s ease-in-out infinite alternate; transform-origin: 26px 36px; }
 @keyframes flick { to { transform: scale(1.15); } }
@@ -276,6 +278,59 @@ body {
 .fly small { font-size: 13px; background: rgba(255,255,255,.9); border-radius: 8px; padding: 0 4px; }
 .fly small.plus { color: var(--good); }
 .fly small.minus { color: var(--bad); }
+
+/* כרטיס מידע על מבנה */
+#tile-info {
+  position: fixed;
+  z-index: 80;
+  width: 240px;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 30px rgba(20,40,60,.35);
+  text-align: right;
+  animation: modalIn .25s cubic-bezier(.4,1.4,.6,1);
+}
+.ti-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 15px;
+}
+.ti-head svg { width: 42px; height: 42px; flex-shrink: 0; }
+.ti-close {
+  margin-inline-start: auto;
+  border: none;
+  background: #eef2f6;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+  color: #556;
+}
+.ti-close:hover { background: #ffdcd8; }
+.ti-sub { font-size: 12px; color: #667; margin: 8px 0 6px; font-weight: 700; }
+.ti-fx {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+.ti-fx li {
+  display: flex;
+  justify-content: space-between;
+  background: #f4f8fb;
+  border-radius: 9px;
+  padding: 5px 9px;
+  font-weight: 700;
+}
+.ti-fx b.plus { color: var(--good); }
+.ti-fx b.minus { color: var(--bad); }
+.ti-cost { margin-top: 9px; font-size: 12px; color: #9a6d12; font-weight: 700; }
 
 /* טוסטים */
 #toasts {
