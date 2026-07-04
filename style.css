@@ -2,8 +2,10 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --sky1: #aee3f7;
-  --sky2: #d8f3e4;
+  --sea: #4a9d97;
+  --sea-dark: #3c8a85;
+  --deep: #17454e;
+  --deep2: #1d565f;
   --card: #ffffff;
   --ink: #2b3a4a;
   --accent: #ff8a3c;
@@ -15,9 +17,10 @@
 html, body { height: 100%; }
 
 body {
-  font-family: "Segoe UI", "Arial Hebrew", Arial, sans-serif;
+  font-family: "Varela Round", "Segoe UI", "Arial Hebrew", Arial, sans-serif;
   color: var(--ink);
-  background: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 70%, #c8ecc9 100%);
+  background-color: var(--sea);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg fill='%233c8a85'%3E%3Cpath d='M30 22l6 12h-12z'/%3E%3Ccircle cx='30' cy='38' r='2'/%3E%3Cpath d='M118 96l6 12h-12z'/%3E%3Ccircle cx='118' cy='112' r='2'/%3E%3Cpath d='M76 140l5 10h-10z'/%3E%3C/g%3E%3Cg stroke='%23428f8a' stroke-width='2.5' stroke-linecap='round' fill='none'%3E%3Cpath d='M96 40q6-5 12 0'/%3E%3Cpath d='M20 120q6-5 12 0'/%3E%3C/g%3E%3C/svg%3E");
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -30,16 +33,17 @@ body {
   align-items: center;
   gap: 14px;
   padding: 8px 16px;
-  background: rgba(255,255,255,.75);
+  background: rgba(17,55,63,.45);
   backdrop-filter: blur(6px);
-  box-shadow: 0 2px 10px rgba(43,58,74,.12);
+  box-shadow: 0 2px 12px rgba(10,35,40,.25);
   z-index: 30;
 }
 
 .brand {
   font-size: 20px;
   font-weight: 800;
-  color: #1d6fa5;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(10,35,40,.4);
   white-space: nowrap;
 }
 
@@ -51,11 +55,13 @@ body {
 }
 
 .meter {
-  background: var(--card);
-  border-radius: 12px;
-  padding: 6px 10px;
-  min-width: 150px;
-  box-shadow: 0 2px 6px rgba(43,58,74,.14);
+  background: var(--deep2);
+  border: 1.5px solid rgba(255,255,255,.22);
+  color: #fff;
+  border-radius: 16px;
+  padding: 6px 12px;
+  min-width: 152px;
+  box-shadow: 0 3px 10px rgba(10,35,40,.35);
   transition: transform .2s;
 }
 .meter.pulse { animation: meterPulse .5s; }
@@ -77,7 +83,7 @@ body {
 
 .m-bar {
   height: 9px;
-  background: #e6ecf1;
+  background: rgba(255,255,255,.22);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -332,6 +338,25 @@ body {
 .ti-fx b.minus { color: var(--bad); }
 .ti-cost { margin-top: 9px; font-size: 12px; color: #9a6d12; font-weight: 700; }
 
+/* עננים */
+.cloud {
+  position: absolute;
+  background: rgba(255,255,255,.85);
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 25;
+  filter: blur(1px);
+  box-shadow: 22px 8px 0 -4px rgba(255,255,255,.8), -22px 10px 0 -6px rgba(255,255,255,.75);
+  animation: drift linear infinite;
+}
+.cloud.c1 { width: 90px; height: 26px; top: 9%; animation-duration: 75s; }
+.cloud.c2 { width: 60px; height: 19px; top: 22%; animation-duration: 105s; animation-delay: -40s; }
+.cloud.c3 { width: 110px; height: 30px; top: 68%; animation-duration: 90s; animation-delay: -70s; opacity: .6; }
+@keyframes drift {
+  from { right: -140px; }
+  to { right: calc(100% + 140px); }
+}
+
 /* טוסטים */
 #toasts {
   position: absolute;
@@ -364,9 +389,9 @@ body {
   align-items: center;
   gap: 16px;
   padding: 10px 18px;
-  background: rgba(255,255,255,.8);
+  background: rgba(17,55,63,.45);
   backdrop-filter: blur(6px);
-  box-shadow: 0 -2px 10px rgba(43,58,74,.12);
+  box-shadow: 0 -2px 12px rgba(10,35,40,.25);
   z-index: 30;
 }
 
@@ -381,11 +406,11 @@ body {
   flex: 1;
   height: 10px;
   border-radius: 6px;
-  background: #dbe4ec;
+  background: rgba(255,255,255,.55);
   position: relative;
   transition: background .3s;
 }
-.tl-dot.build5 { height: 16px; background: #cfd9e4; }
+.tl-dot.build5 { height: 16px; background: rgba(255,255,255,.75); }
 .tl-dot.build5::after {
   content: "🔨";
   position: absolute;
@@ -400,10 +425,11 @@ body {
 #year-badge {
   font-size: 16px;
   font-weight: 800;
-  background: #34404d;
+  background: var(--deep);
+  border: 1.5px solid rgba(255,255,255,.25);
   color: #fff;
-  border-radius: 12px;
-  padding: 8px 14px;
+  border-radius: 999px;
+  padding: 8px 16px;
   white-space: nowrap;
 }
 
@@ -522,7 +548,4 @@ body {
   #meters { flex-wrap: wrap; }
   .meter { min-width: 120px; }
   #shop { width: 240px; }
-  .tile { width: 110px; height: 140px; }
-  .tile svg.ground { width: 110px; height: 68px; }
-  .tile svg.bld { width: 76px; height: 84px; left: 17px; bottom: 22px; }
 }
