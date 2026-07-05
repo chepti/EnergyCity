@@ -99,6 +99,18 @@ body {
 .m-fill.warn { background: linear-gradient(90deg, #ffc44d, #f2a021); }
 .m-fill.danger { background: linear-gradient(90deg, #ff7b6e, #d8402f); }
 
+#pop-badge {
+  background: var(--deep2);
+  border: 1.5px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(10,35,40,.35);
+}
+
 #btn-sound {
   border: 1.5px solid rgba(255,255,255,.35);
   background: var(--deep2);
@@ -151,13 +163,86 @@ body {
 #shop h2 { font-size: 18px; color: #1d6fa5; }
 #shop-hint { font-size: 12px; color: #667; }
 
-.shop-cat {
+/* תפריט קטגוריות */
+.cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.cat-card {
+  background: #fff;
+  border: 2px solid #dde5ec;
+  border-radius: 16px;
+  padding: 14px 8px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, transform .1s, box-shadow .15s;
+}
+.cat-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,138,60,.2);
+}
+.cat-card svg { width: 64px; height: 64px; }
+.cc-name { font-size: 15px; font-weight: 800; margin-top: 4px; }
+.cc-count { font-size: 11px; color: #778; }
+
+.shop-back {
+  border: none;
+  background: #eef4f9;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-family: inherit;
   font-size: 13px;
-  font-weight: 800;
-  color: #556;
-  margin-top: 6px;
-  border-bottom: 2px solid #dde5ec;
-  padding-bottom: 2px;
+  font-weight: 700;
+  color: #1d6fa5;
+  cursor: pointer;
+  text-align: right;
+  width: 100%;
+  margin-bottom: 8px;
+}
+.shop-back:hover { background: #dcebf7; }
+
+/* רשת מבנים בקטגוריה */
+.item-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.shop-sq {
+  position: relative;
+  background: #fff;
+  border: 2px solid #dde5ec;
+  border-radius: 14px;
+  padding: 8px 6px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, transform .1s, box-shadow .15s;
+}
+.shop-sq:hover { border-color: var(--accent); transform: translateY(-1px); }
+.shop-sq.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255,138,60,.25);
+  background: #fff7ef;
+}
+.shop-sq.locked, .shop-sq.poor { opacity: .55; cursor: not-allowed; }
+.shop-sq.locked:hover, .shop-sq.poor:hover { border-color: #dde5ec; transform: none; }
+.shop-sq svg { width: 54px; height: 54px; }
+.sq-name { font-size: 12.5px; font-weight: 800; }
+.sq-cost { font-size: 12px; color: #9a6d12; font-weight: 700; }
+.sq-fx { font-size: 10.5px; display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
+.sq-fx b.plus { color: var(--good); }
+.sq-fx b.minus { color: var(--bad); }
+.sq-cap {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #456;
+  background: #eef4f9;
+  border-radius: 8px;
+  padding: 1px 6px;
+  margin-top: 3px;
+  margin-inline-end: 3px;
 }
 
 .shop-item {
@@ -201,11 +286,17 @@ body {
 }
 
 .shop-actions {
+  position: sticky;
+  bottom: -12px;
   margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 10px;
+  padding: 10px 0 12px;
+  background: rgba(255,255,255,.94);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 -6px 12px rgba(43,58,74,.08);
+  z-index: 5;
 }
 
 .tool-btn {
@@ -245,12 +336,12 @@ body {
   height: 180px;
   pointer-events: none; /* רק המעוין עצמו לחיץ — מונע חטיפת קליקים בין משבצות */
 }
-.tile svg.ground { position: absolute; bottom: 0; left: 0; width: 150px; height: 93px; pointer-events: none; }
+.tile svg.ground { position: absolute; bottom: 0; left: 0; width: 150px; height: 75px; pointer-events: none; }
 .tile .g-top { pointer-events: auto; }
 .tile.hasb .g-top, .tile.placeable .g-top, .tile.demolish .g-top { cursor: pointer; }
 .tile svg.bld {
   position: absolute;
-  bottom: 30px;
+  bottom: 12px;
   left: 25px;
   width: 100px;
   height: 110px;
@@ -546,23 +637,54 @@ body {
 }
 #dec-desc { font-size: 15px; line-height: 1.7; color: #445; margin-bottom: 16px; }
 
-#dec-options { display: flex; flex-direction: column; gap: 10px; }
+#dec-illu {
+  width: 96px;
+  height: 96px;
+  margin: 10px auto 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fef4dd, #ffd9a8);
+  border: 3px solid #f2b25e;
+  box-shadow: 0 6px 18px rgba(242,178,94,.4);
+  font-size: 52px;
+  line-height: 92px;
+  text-align: center;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  transition: transform .18s ease;
+}
+#dec-illu:active { cursor: grabbing; }
+
+#dec-options {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
 .dec-opt {
+  flex: 1;
   border: 2px solid #dde5ec;
   background: #fbfdff;
-  border-radius: 14px;
-  padding: 12px 14px;
+  border-radius: 16px;
+  padding: 14px 10px;
   cursor: pointer;
   font-family: inherit;
   font-size: 15px;
-  text-align: right;
-  transition: border-color .15s, transform .1s;
+  text-align: center;
+  transition: border-color .15s, transform .12s, box-shadow .15s;
 }
-.dec-opt:hover { border-color: var(--accent); transform: translateY(-1px); }
-.dec-opt .do-title { font-weight: 800; margin-bottom: 3px; }
-.dec-opt .do-fx { font-size: 13px; display: flex; gap: 10px; flex-wrap: wrap; }
+.dec-opt:first-child { background: #f3fbf3; border-color: #cde8cd; }
+.dec-opt:hover { border-color: var(--accent); transform: translateY(-2px); }
+.dec-opt.lean {
+  border-color: var(--accent);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(255,138,60,.3);
+}
+.dec-opt .do-title { font-weight: 800; margin-bottom: 6px; font-size: 16px; }
+.dec-opt .do-fx { font-size: 13px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .do-fx b.plus { color: var(--good); }
 .do-fx b.minus { color: var(--bad); }
+
+.dec-hint { font-size: 11.5px; color: #99a; margin-top: 12px; }
 
 /* מסך סיום */
 #end-stats {
@@ -593,7 +715,22 @@ body {
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
-  #meters { flex-wrap: wrap; }
-  .meter { min-width: 120px; }
-  #shop { width: 240px; }
+  #shop { width: 250px; }
+  .item-grid, .cat-grid { grid-template-columns: 1fr; }
+}
+
+/* מובייל: מדדים 2×2 */
+@media (max-width: 700px) {
+  #topbar { flex-wrap: wrap; gap: 8px; }
+  .brand { font-size: 16px; }
+  #meters {
+    order: 5;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .meter { min-width: 0; }
+  #dec-options { flex-direction: column; }
+  #dec-illu { width: 76px; height: 76px; font-size: 40px; line-height: 72px; }
 }

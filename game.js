@@ -3,57 +3,106 @@
 
 /* ---------- נתוני מבנים ---------- */
 const TILES = {
-  house:   { name: "שכונת בתים",        cat: "מגורים",  icon: "s-house",   cost: 100, fx: { sat: 2, eco: 1, eng: -1 } },
-  apts:    { name: "בנייני מגורים",      cat: "מגורים",  icon: "s-apts",    cost: 150, fx: { sat: 1, eco: 2, env: -1, eng: -2 } },
-  luxury:  { name: "מגדלי יוקרה",        cat: "מגורים",  icon: "s-luxury",  cost: 320, unlock: 10, fx: { sat: 3, eco: 3, eng: -3 } },
-  office:  { name: "מגדל משרדים",        cat: "תעסוקה",  icon: "s-office",  cost: 180, fx: { eco: 3, eng: -2 } },
-  factory: { name: "מפעל",               cat: "תעסוקה",  icon: "s-factory", cost: 200, fx: { sat: -1, eco: 4, env: -2, eng: -2 } },
-  mall:    { name: "מרכז מסחרי",         cat: "תעסוקה",  icon: "s-mall",    cost: 160, fx: { sat: 1, eco: 2, env: -1, eng: -2 } },
-  hitech:  { name: "קריית היי־טק",       cat: "תעסוקה",  icon: "s-hitech",  cost: 380, unlock: 15, fx: { sat: 1, eco: 6, eng: -4 } },
-  park:    { name: "פארק",               cat: "פנאי",    icon: "s-park",    cost: 60,  fx: { sat: 2, env: 2 } },
-  sport:   { name: "מגרש ספורט",         cat: "פנאי",    icon: "s-sport",   cost: 100, fx: { sat: 3, eng: -1 } },
-  luna:    { name: "לונה פארק",          cat: "פנאי",    icon: "s-luna",    cost: 280, unlock: 10, fx: { sat: 5, env: -1, eng: -2 } },
-  coal:    { name: "תחנת כוח פחמית",     cat: "אנרגיה",  icon: "s-coal",    cost: 120, fx: { eco: 1, env: -3, eng: 6 } },
-  gas:     { name: "תחנת כוח בגז",       cat: "אנרגיה",  icon: "s-gas",     cost: 200, fx: { eco: 1, env: -1, eng: 5 } },
-  solar:   { name: "שדה סולארי",         cat: "אנרגיה",  icon: "s-solar",   cost: 220, unlock: 5,  fx: { eng: 2 } },
-  wind:    { name: "טורבינות רוח",       cat: "אנרגיה",  icon: "s-wind",    cost: 280, unlock: 10, fx: { eng: 3 } },
-  nuclear: { name: "תחנת כוח גרעינית",   cat: "אנרגיה",  icon: "s-nuclear", cost: 550, unlock: 20, fx: { sat: -1, eco: 1, eng: 8 } },
+  house:    { name: "שכונת בתים",        cat: "מגורים",  icon: "s-house",    cost: 100, homes: 40,  fx: { sat: 2, eco: 1, eng: -1 } },
+  apts:     { name: "בנייני מגורים",      cat: "מגורים",  icon: "s-apts",     cost: 150, homes: 120, fx: { sat: 1, eco: 2, env: -1, eng: -2 } },
+  luxury:   { name: "מגדלי יוקרה",        cat: "מגורים",  icon: "s-luxury",   cost: 320, unlock: 10, homes: 80, fx: { sat: 3, eco: 3, eng: -3 } },
+  office:   { name: "מגדל משרדים",        cat: "תעסוקה",  icon: "s-office",   cost: 180, jobs: 80,  fx: { eco: 3, eng: -2 } },
+  factory:  { name: "מפעל",               cat: "תעסוקה",  icon: "s-factory",  cost: 200, jobs: 100, fx: { sat: -1, eco: 4, env: -2, eng: -2 } },
+  mall:     { name: "מרכז מסחרי",         cat: "תעסוקה",  icon: "s-mall",     cost: 160, jobs: 60,  fx: { sat: 1, eco: 2, env: -1, eng: -2 } },
+  hospital: { name: "בית חולים",          cat: "תעסוקה",  icon: "s-hospital", cost: 260, jobs: 80,  fx: { sat: 3, eco: 1, eng: -2 } },
+  port:     { name: "נמל",                cat: "תעסוקה",  icon: "s-port",     cost: 340, unlock: 10, jobs: 120, fx: { eco: 5, env: -2, eng: -2 } },
+  hitech:   { name: "קריית היי־טק",       cat: "תעסוקה",  icon: "s-hitech",   cost: 380, unlock: 15, jobs: 150, fx: { sat: 1, eco: 6, eng: -4 } },
+  airport:  { name: "שדה תעופה",          cat: "תעסוקה",  icon: "s-airport",  cost: 420, unlock: 15, jobs: 150, fx: { sat: 1, eco: 6, env: -3, eng: -3 } },
+  park:     { name: "פארק",               cat: "פנאי",    icon: "s-park",     cost: 60,  fx: { sat: 2, env: 2 } },
+  forest:   { name: "חורשה",              cat: "פנאי",    icon: "s-forest",   cost: 80,  fx: { env: 3 } },
+  sport:    { name: "מגרש ספורט",         cat: "פנאי",    icon: "s-sport",    cost: 100, jobs: 10, fx: { sat: 3, env: 1 } },
+  lake:     { name: "אגם",                cat: "פנאי",    icon: "s-lake",     cost: 150, fx: { sat: 2, env: 2 } },
+  luna:     { name: "לונה פארק",          cat: "פנאי",    icon: "s-luna",     cost: 280, unlock: 10, jobs: 30, fx: { sat: 5, env: -1, eng: -2 } },
+  coal:     { name: "תחנת כוח פחמית",     cat: "אנרגיה",  icon: "s-coal",     cost: 120, jobs: 30, fx: { eco: 1, env: -3, eng: 6 } },
+  gas:      { name: "תחנת כוח בגז",       cat: "אנרגיה",  icon: "s-gas",      cost: 200, jobs: 25, fx: { eco: 1, env: -1, eng: 5 } },
+  solar:    { name: "שדה סולארי",         cat: "אנרגיה",  icon: "s-solar",    cost: 220, unlock: 5,  jobs: 10, fx: { eng: 2 } },
+  wind:     { name: "טורבינות רוח",       cat: "אנרגיה",  icon: "s-wind",     cost: 280, unlock: 10, jobs: 10, fx: { eng: 3 } },
+  nuclear:  { name: "תחנת כוח גרעינית",   cat: "אנרגיה",  icon: "s-nuclear",  cost: 550, unlock: 20, jobs: 40, fx: { sat: -1, eco: 1, eng: 8 } },
 };
-const CATS = ["מגורים", "תעסוקה", "פנאי", "אנרגיה"];
+const CATS = [
+  { name: "מגורים", icon: "s-house" },
+  { name: "תעסוקה", icon: "s-office" },
+  { name: "פנאי",   icon: "s-park" },
+  { name: "אנרגיה", icon: "s-solar" },
+];
 const GREEN = ["solar", "wind", "nuclear"];
+const POLLUTERS = ["factory", "coal", "gas", "port", "airport"];
+const GREENERY = ["park", "forest", "lake", "sport"];
+const EXPANSION_YEARS = [10, 20];
 
-/* ---------- החלטות שנתיות ---------- */
+/* ---------- החלטות שנתיות (33 — בלי חזרות לאורך המשחק) ---------- */
 const DECISIONS = [
-  { title: "איסור חניה במרכז העיר", desc: "הצעה להפוך את מרכז העיר לאזור ללא מכוניות. אוויר נקי יותר — אבל הנהגים יכעסו.",
+  { emoji: "🚗", title: "איסור חניה במרכז העיר", desc: "הצעה להפוך את מרכז העיר לאזור ללא מכוניות. אוויר נקי יותר — אבל הנהגים יכעסו.",
     opts: [{ label: "לאשר", fx: { sat: -4, env: 6 } }, { label: "לדחות", fx: {} }] },
-  { title: "מס על שקיות פלסטיק", desc: "מס קטן על שקיות חד־פעמיות יכניס כסף לקופת העיר וישפר את איכות הסביבה.",
+  { emoji: "🛍️", title: "מס על שקיות פלסטיק", desc: "מס קטן על שקיות חד־פעמיות יכניס כסף לקופת העיר וישפר את איכות הסביבה.",
     opts: [{ label: "להטיל את המס", money: 40, fx: { sat: -3, env: 3 } }, { label: "לוותר", fx: {} }] },
-  { title: "סבסוד בידוד לבתים", desc: "העירייה תסבסד בידוד קירות וחלונות — הבתים יבזבזו פחות חשמל.",
+  { emoji: "🏠", title: "סבסוד בידוד לבתים", desc: "העירייה תסבסד בידוד קירות וחלונות — הבתים יבזבזו פחות חשמל.",
     opts: [{ label: "לסבסד", money: -60, fx: { eng: 6, sat: 2 } }, { label: "אין תקציב", fx: {} }] },
-  { title: "פסטיבל קיץ עירוני", desc: "שלושה ימים של הופעות ודוכנים בפארק המרכזי. התושבים ישמחו, אבל זה עולה כסף ומלכלך.",
+  { emoji: "🎪", title: "פסטיבל קיץ עירוני", desc: "שלושה ימים של הופעות ודוכנים בפארק המרכזי. התושבים ישמחו, אבל זה עולה כסף ומלכלך.",
     opts: [{ label: "לקיים!", money: -50, fx: { sat: 8, env: -2 } }, { label: "לוותר השנה", fx: { sat: -1 } }] },
-  { title: "יום ללא רכב", desc: "פעם בשבוע כל העיר הולכת ברגל או רוכבת על אופניים.",
+  { emoji: "🚲", title: "יום ללא רכב", desc: "פעם בשבוע כל העיר הולכת ברגל או רוכבת על אופניים.",
     opts: [{ label: "להכריז", fx: { env: 6, sat: -2, eco: -2 } }, { label: "לא מתאים לנו", fx: {} }] },
-  { title: "תאורת רחוב חסכונית (LED)", desc: "החלפת כל פנסי הרחוב בנורות לד יקרה עכשיו — אך חוסכת המון אנרגיה.",
+  { emoji: "💡", title: "תאורת רחוב חסכונית", desc: "החלפת כל פנסי הרחוב בנורות לד יקרה עכשיו — אך חוסכת המון אנרגיה.",
     opts: [{ label: "להחליף", money: -40, fx: { eng: 5 } }, { label: "להשאיר", fx: {} }] },
-  { title: "מס תעשייה ירוק", desc: "מס חדש על מפעלים מזהמים יכניס כסף — אבל יפגע בעסקים.",
+  { emoji: "🏭", title: "מס תעשייה ירוק", desc: "מס חדש על מפעלים מזהמים יכניס כסף — אבל יפגע בעסקים.",
     opts: [{ label: "להטיל", money: 60, fx: { eco: -4, env: 2 } }, { label: "לוותר", fx: {} }] },
-  { title: "שתילת עצים ברחובות", desc: "אלף עצים חדשים לאורך הכבישים — צל, אוויר נקי ויופי.",
+  { emoji: "🌳", title: "שתילת עצים ברחובות", desc: "אלף עצים חדשים לאורך הכבישים — צל, אוויר נקי ויופי.",
     opts: [{ label: "לשתול", money: -30, fx: { env: 5, sat: 3 } }, { label: "לא עכשיו", fx: {} }] },
-  { title: "הנחה בארנונה", desc: "התושבים מבקשים הנחה במסים. זה ישמח אותם אבל יעלה לקופת העיר.",
+  { emoji: "🏛️", title: "הנחה בארנונה", desc: "התושבים מבקשים הנחה במסים. זה ישמח אותם אבל יעלה לקופת העיר.",
     opts: [{ label: "לתת הנחה", money: -50, fx: { sat: 6 } }, { label: "לסרב", fx: { sat: -2 } }] },
-  { title: "חברת היי־טק רוצה להגיע", desc: "חברת טכנולוגיה גדולה מציעה לפתוח סניף בעיר. עבודה לכולם — אבל צריכת החשמל תזנק.",
+  { emoji: "💻", title: "חברת היי־טק רוצה להגיע", desc: "חברת טכנולוגיה גדולה מציעה לפתוח סניף בעיר. עבודה לכולם — אבל צריכת החשמל תזנק.",
     opts: [{ label: "לקבל בברכה", fx: { eco: 8, eng: -5, env: -1 } }, { label: "לסרב", fx: {} }] },
-  { title: "תוכנית חינוך לחיסכון באנרגיה", desc: "שיעורים בבתי הספר על חיסכון בחשמל. ילדים חכמים = עיר חסכונית.",
+  { emoji: "🎓", title: "חינוך לחיסכון באנרגיה", desc: "שיעורים בבתי הספר על חיסכון בחשמל. ילדים חכמים = עיר חסכונית.",
     opts: [{ label: "להפעיל", money: -30, fx: { eng: 4, sat: 1 } }, { label: "לוותר", fx: {} }] },
-  { title: "קו אוטובוס חשמלי חדש", desc: "אוטובוסים חשמליים שיחליפו חלק מהנסיעות ברכב פרטי.",
+  { emoji: "🚌", title: "קו אוטובוס חשמלי חדש", desc: "אוטובוסים חשמליים שיחליפו חלק מהנסיעות ברכב פרטי.",
     opts: [{ label: "להשיק", money: -45, fx: { env: 4, sat: 4 } }, { label: "יקר מדי", fx: {} }] },
-  { title: "מפעל מיחזור אזורי", desc: "הקמת מרכז מיחזור שיטפל בפסולת של כל האזור — וגם ירוויח ממנה.",
+  { emoji: "♻️", title: "מפעל מיחזור אזורי", desc: "הקמת מרכז מיחזור שיטפל בפסולת של כל האזור — וגם ירוויח ממנה.",
     opts: [{ label: "להקים", money: -60, fx: { env: 7, eco: 3 } }, { label: "לדחות", fx: {} }] },
-  { title: "לונה פארק נודד", desc: "לונה פארק מבקש לחנות בעיר לחודש תמורת דמי שכירות.",
+  { emoji: "🎡", title: "לונה פארק נודד", desc: "לונה פארק מבקש לחנות בעיר לחודש תמורת דמי שכירות.",
     opts: [{ label: "לארח", money: 30, fx: { sat: 4, env: -1 } }, { label: "לסרב", fx: { sat: -1 } }] },
-  { title: "השבתת המזרקה בכיכר", desc: "המזרקה הגדולה צורכת הרבה חשמל ומים. אפשר לכבות אותה.",
+  { emoji: "⛲", title: "השבתת המזרקה בכיכר", desc: "המזרקה הגדולה צורכת הרבה חשמל ומים. אפשר לכבות אותה.",
     opts: [{ label: "לכבות", fx: { eng: 3, sat: -3 } }, { label: "להשאיר דולקת", fx: {} }] },
+  { emoji: "🌱", title: "גגות ירוקים", desc: "חובת גינה על כל גג שטוח חדש — בידוד טבעי ואוויר נקי.",
+    opts: [{ label: "לחייב", money: -50, fx: { env: 5, eng: 2 } }, { label: "המלצה בלבד", fx: { env: 1 } }] },
+  { emoji: "🥕", title: "שוק איכרים שבועי", desc: "חקלאים מהאזור ימכרו תוצרת טרייה בכיכר העיר בכל יום שישי.",
+    opts: [{ label: "לפתוח", money: -20, fx: { sat: 3, eco: 2, env: 1 } }, { label: "אין מקום", fx: {} }] },
+  { emoji: "🚴", title: "אופניים שיתופיים", desc: "תחנות השכרת אופניים בכל שכונה — פחות מכוניות בכבישים.",
+    opts: [{ label: "להציב", money: -35, fx: { env: 4, sat: 2 } }, { label: "לוותר", fx: {} }] },
+  { emoji: "🎆", title: "איסור זיקוקים", desc: "הזיקוקים מפחידים חיות ומזהמים את האוויר. אפשר לעבור למופע רחפנים שקט.",
+    opts: [{ label: "לאסור", fx: { env: 2, sat: -2 } }, { label: "להשאיר", fx: {} }] },
+  { emoji: "🍫", title: "מפעל שוקולד", desc: "יזם רוצה לפתוח מפעל שוקולד קטן. ריח מתוק ומקומות עבודה — אבל עוד משאית ועוד ארובה.",
+    opts: [{ label: "לאשר", fx: { eco: 4, sat: 2, env: -2 } }, { label: "לסרב", fx: {} }] },
+  { emoji: "🎨", title: "אמנות רחוב", desc: "אמנים מקומיים יציירו ציורי קיר ענקיים על בניינים אפורים.",
+    opts: [{ label: "לממן", money: -25, fx: { sat: 4 } }, { label: "לא עכשיו", fx: {} }] },
+  { emoji: "📚", title: "ספריות רחוב", desc: "ארונות ספרים חינמיים בכל פינה — לוקחים ספר, מחזירים ספר.",
+    opts: [{ label: "להציב", money: -15, fx: { sat: 2 } }, { label: "לוותר", fx: {} }] },
+  { emoji: "❄️", title: "הגבלת מזגנים בקיץ", desc: "כיוון כל המזגנים הציבוריים ל־24 מעלות יחסוך המון חשמל — אבל יהיה חם.",
+    opts: [{ label: "להגביל", fx: { eng: 5, sat: -4 } }, { label: "לוותר", fx: {} }] },
+  { emoji: "☀️", title: "פאנלים על גגות ציבוריים", desc: "התקנת פאנלים סולאריים על בתי הספר והספרייה העירונית.",
+    opts: [{ label: "להתקין", money: -70, fx: { eng: 6, env: 1 } }, { label: "יקר מדי", fx: {} }] },
+  { emoji: "🏃", title: "מרתון עירוני", desc: "אלפי רצים מכל הארץ יגיעו — פרסום נהדר לעיר ומלונות מלאים.",
+    opts: [{ label: "לארגן", money: -30, fx: { sat: 4, eco: 3 } }, { label: "לוותר", fx: {} }] },
+  { emoji: "🧳", title: "מס תיירות", desc: "מס קטן על לינת תיירים ימלא את הקופה — אבל אולי ירתיע מבקרים.",
+    opts: [{ label: "להטיל", money: 50, fx: { eco: -2 } }, { label: "לוותר", fx: {} }] },
+  { emoji: "🌌", title: "כיבוי אורות בלילה", desc: "כיבוי תאורת בניינים ציבוריים אחרי חצות — חיסכון וגם שמיים זרועי כוכבים.",
+    opts: [{ label: "לכבות", fx: { eng: 4, sat: -1 } }, { label: "להשאיר", fx: {} }] },
+  { emoji: "📡", title: "חיישני זיהום חכמים", desc: "רשת חיישנים שתאתר מוקדי זיהום בזמן אמת ותכוון את הטיפול בהם.",
+    opts: [{ label: "לפרוס", money: -40, fx: { env: 3 } }, { label: "לוותר", fx: {} }] },
+  { emoji: "🏖️", title: "יום ניקיון חופים", desc: "מבצע התנדבות גדול לניקוי החוף והמזח — כל בתי הספר משתתפים.",
+    opts: [{ label: "לארגן", money: -10, fx: { env: 4, sat: 1 } }, { label: "אין זמן", fx: {} }] },
+  { emoji: "💧", title: "מערכת מים חכמה", desc: "צנרת חדשה עם חיישני דליפות תחסוך מים ואנרגיית שאיבה.",
+    opts: [{ label: "לשדרג", money: -55, fx: { eng: 3, env: 2 } }, { label: "לדחות", fx: {} }] },
+  { emoji: "🐝", title: "כוורות עירוניות", desc: "הצבת כוורות דבורים על גגות — האבקה לגינות ודבש מקומי.",
+    opts: [{ label: "להציב", money: -15, fx: { env: 2, sat: 1 } }, { label: "מפחיד!", fx: {} }] },
+  { emoji: "🎮", title: "מרכז נוער חדש", desc: "מועדון עם משחקים, חוגים ואולם הופעות — שיהיה לנוער לאן ללכת בערב.",
+    opts: [{ label: "להקים", money: -45, fx: { sat: 5, eng: -1 } }, { label: "אין תקציב", fx: {} }] },
+  { emoji: "🚉", title: "רכבת קלה אזורית", desc: "הצטרפות לפרויקט רכבת אזורי — נסיעה מהירה לערים השכנות בלי פקקים.",
+    opts: [{ label: "להצטרף", money: -80, fx: { eco: 4, env: 3, sat: 3 } }, { label: "לוותר", fx: {} }] },
 ];
 
 /* ---------- קבועים ---------- */
@@ -63,8 +112,8 @@ const GRANT = 250;
 
 const METER_META = {
   sat: { emoji: v => (v >= 0 ? "😊" : "😠"), label: "שביעות רצון" },
-  eco: { emoji: () => "📈", label: "כלכלה" },
-  env: { emoji: v => (v >= 0 ? "🌿" : "🏭"), label: "איכות הסביבה" },
+  eco: { emoji: () => "💲", label: "כלכלה" },
+  env: { emoji: () => "🌿", label: "איכות הסביבה" },
   eng: { emoji: () => "⚡", label: "אנרגיה" },
 };
 
@@ -74,9 +123,11 @@ const S = {
   grid: [],          // מפתח מבנה או null לכל משבצת
   meters: { sat: 50, eco: 50, env: 70, eng: 50 },
   money: 0,
+  pop: 0,            // תושבים
   year: 0,
   phase: "start",    // start | build | idle | sim | end
   tool: null,        // מפתח מבנה, "bulldoze" או null
+  shopCat: null,     // קטגוריה פתוחה בחנות
   decisionPool: [],
   busy: false,
 };
@@ -145,10 +196,8 @@ function toast(msg, cls = "") {
 
 /* ---------- לוח ---------- */
 function tileGroundSVG() {
-  return `<svg class="ground" viewBox="0 0 100 62">
-    <polygon class="g-left"  points="0,25 50,50 50,62 0,37" fill="#a9814f"/>
-    <polygon class="g-right" points="50,50 100,25 100,37 50,62" fill="#8a6a3e"/>
-    <polygon class="g-top"   points="50,1 99,25 50,49 1,25" fill="#9ed46f" stroke="#7bb84e" stroke-width="1.5"/>
+  return `<svg class="ground" viewBox="0 0 100 50">
+    <polygon class="g-top" points="50,1 99,25 50,49 1,25" fill="#9ed46f" stroke="#7bb84e" stroke-width="1.5"/>
   </svg>`;
 }
 
@@ -164,7 +213,7 @@ function buildBoard() {
   board.style.height = boardH + "px";
 
   // חצי־אי — צמוד למשבצות למעלה, לשון יבשה עם גבעות נמשכת שמאלה, מזח וכביש גישה
-  const gTop = TILE_DIV_H - 93;                    // ראש מעוין הקרקע העליון
+  const gTop = TILE_DIV_H - 75;                    // ראש מעוין הקרקע העליון
   const icx = boardW / 2, icy = gTop + (n * TH) / 2;
   const irx = boardW / 2, iry = (n * TH) / 2;
   //            0=ימין 2=ימין-מטה 4=מטה 6=שמאל-מטה 8=שמאל 10=שמאל-מעלה 12=מעלה 14=ימין-מעלה
@@ -198,7 +247,7 @@ function buildBoard() {
   };
   const [px, py] = coastPt(4, 0.9);                // תחתית — שם המזח
   const [hx, hy] = coastPt(8, 0.5);                // אמצע הלשון — שם הגבעות
-  const roadEndY = gTop + n * TH + 14;             // תחתית בסיס המשבצת הקדמית
+  const roadEndY = gTop + n * TH + 4;              // הפינה הקדמית של הרשת
   const roadD = `M ${icx},${roadEndY} Q ${icx + 12},${(roadEndY + py) / 2} ${px},${py - 4}`;
   const padL = 540, pad = 175;
   const island = document.createElement("div");
@@ -266,6 +315,32 @@ function fitBoard() {
 window.addEventListener("resize", fitBoard);
 
 function tileEl(i) { return $("#board").querySelectorAll(".tile")[i]; }
+
+// הרחבת העיר — שורה ועמודה חדשות, המבנים הקיימים נשארים במקומם
+function expandBoard() {
+  const old = S.grid, oldN = S.size;
+  S.size++;
+  buildBoard();
+  for (let y = 0; y < oldN; y++)
+    for (let x = 0; x < oldN; x++)
+      S.grid[y * S.size + x] = old[y * oldN + x];
+  S.grid.forEach((k, i) => { if (k) renderTile(i); });
+}
+
+// דיור ותעסוקה בעיר
+function cityStats() {
+  let housing = 0, jobs = 0;
+  for (const k of S.grid) {
+    if (!k) continue;
+    housing += TILES[k].homes || 0;
+    jobs += TILES[k].jobs || 0;
+  }
+  return { housing, jobs };
+}
+
+function updatePop() {
+  $("#pop-val").textContent = S.pop.toLocaleString("he-IL");
+}
 
 function renderTile(i) {
   const el = tileEl(i);
@@ -345,7 +420,9 @@ function showTileInfo(i) {
   const panel = $("#tile-info");
   const rows = Object.entries(t.fx).filter(([, v]) => v).map(([k, v]) =>
     `<li><span>${METER_META[k].emoji(v)} ${METER_META[k].label}</span><b class="${v > 0 ? "plus" : "minus"}">${v > 0 ? "+" : ""}${v}</b></li>`
-  ).join("");
+  ).join("")
+    + (t.homes ? `<li><span>👥 מקומות מגורים</span><b class="plus">+${t.homes}</b></li>` : "")
+    + (t.jobs ? `<li><span>💼 מקומות עבודה</span><b class="plus">+${t.jobs}</b></li>` : "");
   panel.innerHTML = `
     <div class="ti-head"><svg viewBox="0 0 100 100"><use href="#${t.icon}"/></svg><span>${t.name}</span><button class="ti-close">✕</button></div>
     <div class="ti-sub">השפעה על העיר בכל שנה:</div>
@@ -375,28 +452,51 @@ document.addEventListener("click", e => {
 function renderShop() {
   const box = $("#shop-items");
   box.innerHTML = "";
-  for (const cat of CATS) {
-    const h = document.createElement("div");
-    h.className = "shop-cat";
-    h.textContent = cat;
-    box.appendChild(h);
+
+  if (!S.shopCat) {
+    // תפריט ראשי — קטגוריות
+    const grid = document.createElement("div");
+    grid.className = "cat-grid";
+    for (const cat of CATS) {
+      const items = Object.entries(TILES).filter(([, t]) => t.cat === cat.name);
+      const openCount = items.filter(([, t]) => !(t.unlock && S.year < t.unlock)).length;
+      const el = document.createElement("div");
+      el.className = "cat-card";
+      el.innerHTML = `
+        <svg viewBox="0 0 100 100"><use href="#${cat.icon}"/></svg>
+        <div class="cc-name">${cat.name}</div>
+        <div class="cc-count">${openCount}/${items.length} מבנים</div>`;
+      el.addEventListener("click", () => { S.shopCat = cat.name; sfx("select"); renderShop(); });
+      grid.appendChild(el);
+    }
+    box.appendChild(grid);
+  } else {
+    // תפריט משנה — מבני הקטגוריה
+    const back = document.createElement("button");
+    back.className = "shop-back";
+    back.innerHTML = `◂ חזרה לקטגוריות <b>· ${S.shopCat}</b>`;
+    back.addEventListener("click", () => { S.shopCat = null; S.tool = null; renderShop(); updateTileCursors(); });
+    box.appendChild(back);
+
+    const grid = document.createElement("div");
+    grid.className = "item-grid";
     for (const [key, t] of Object.entries(TILES)) {
-      if (t.cat !== cat) continue;
+      if (t.cat !== S.shopCat) continue;
       const locked = t.unlock && S.year < t.unlock;
       const poor = !locked && t.cost > S.money;
       const el = document.createElement("div");
-      el.className = "shop-item" + (locked ? " locked" : "") + (poor ? " poor" : "") + (S.tool === key ? " selected" : "");
+      el.className = "shop-sq" + (locked ? " locked" : "") + (poor ? " poor" : "") + (S.tool === key ? " selected" : "");
       el.innerHTML = `
         <svg viewBox="0 0 100 100"><use href="#${t.icon}"/></svg>
-        <div class="si-info">
-          <div class="si-name">${t.name}</div>
-          <div class="si-cost">עלות: ${t.cost} 💰</div>
-          <div class="si-fx">${fxHtml(t.fx)}</div>
-        </div>
+        <div class="sq-name">${t.name}</div>
+        <div class="sq-cost">${t.cost} 💰</div>
+        <div class="sq-fx">${fxHtml(t.fx)}</div>
+        ${t.homes ? `<div class="sq-cap">👥 +${t.homes}</div>` : ""}${t.jobs ? `<div class="sq-cap">💼 +${t.jobs}</div>` : ""}
         ${locked ? `<span class="si-lock">🔒 שנה ${t.unlock}</span>` : ""}`;
       if (!locked && !poor) el.addEventListener("click", () => { S.tool = S.tool === key ? null : key; sfx("select"); renderShop(); updateTileCursors(); });
-      box.appendChild(el);
+      grid.appendChild(el);
     }
+    box.appendChild(grid);
   }
   $("#btn-bulldoze").classList.toggle("selected", S.tool === "bulldoze");
 }
@@ -405,6 +505,7 @@ function enterBuild(first) {
   hideTileInfo();
   S.phase = "build";
   S.tool = null;
+  S.shopCat = null;
   $("#shop").classList.remove("hidden");
   $("#shop-title").textContent = first ? "🔨 בניית העיר" : `🔨 שנת שיפוצים! (שנה ${S.year})`;
   $("#btn-next-year").classList.add("hidden");
@@ -420,6 +521,12 @@ function exitBuild() {
   $("#shop").classList.add("hidden");
   updateTileCursors();
   fitBoard();
+  if (S.year === 0) {
+    // התושבים הראשונים עוברים לגור בעיר
+    S.pop = Math.round(cityStats().housing * 0.5);
+    updatePop();
+    toast(`👥 ${S.pop} התושבים הראשונים הגיעו לעיר!`);
+  }
   if (S.year < YEARS_TOTAL) $("#btn-next-year").classList.remove("hidden");
 }
 
@@ -518,22 +625,49 @@ function nextDecision() {
 function showDecision(dec) {
   return new Promise(resolve => {
     $("#dec-year").textContent = S.year + 1;
+    $("#dec-illu").textContent = dec.emoji || "📜";
     $("#dec-title").textContent = dec.title;
     $("#dec-desc").textContent = dec.desc;
     const box = $("#dec-options");
     box.innerHTML = "";
-    dec.opts.forEach(opt => {
+    const btns = [];
+    const choose = opt => {
+      sfx("select");
+      $("#overlay").classList.add("hidden");
+      $("#modal-decision").classList.add("hidden");
+      resolve(opt);
+    };
+    dec.opts.forEach((opt, oi) => {
       const b = document.createElement("button");
       b.className = "dec-opt";
       b.innerHTML = `<div class="do-title">${opt.label}</div><div class="do-fx">${fxHtml(opt.fx, opt.money)}</div>`;
-      b.addEventListener("click", () => {
-        sfx("select");
-        $("#overlay").classList.add("hidden");
-        $("#modal-decision").classList.add("hidden");
-        resolve(opt);
-      });
+      b.addEventListener("click", () => choose(opt));
       box.appendChild(b);
+      btns.push(b);
     });
+
+    // גרירת האיור ימינה/שמאלה בוחרת בכרטיס המתאים
+    const illu = $("#dec-illu");
+    let startX = null, dx = 0;
+    illu.style.transform = "";
+    illu.onpointerdown = e => { startX = e.clientX; try { illu.setPointerCapture(e.pointerId); } catch (err) {} };
+    illu.onpointermove = e => {
+      if (startX === null) return;
+      dx = e.clientX - startX;
+      illu.style.transform = `translateX(${dx}px) rotate(${dx / 14}deg)`;
+      btns[0]?.classList.toggle("lean", dx > 30);   // בכיוון RTL הכרטיס הראשון מוצג מימין
+      btns[1]?.classList.toggle("lean", dx < -30);
+    };
+    illu.onpointerup = () => {
+      if (startX === null) return;
+      const picked = dx > 70 ? 0 : dx < -70 ? 1 : -1;
+      startX = null;
+      illu.style.transform = "";
+      btns.forEach(b => b.classList.remove("lean"));
+      if (picked >= 0 && dec.opts[picked]) choose(dec.opts[picked]);
+      dx = 0;
+    };
+
     sfx("decision");
     $("#overlay").classList.remove("hidden");
     $("#modal-decision").classList.remove("hidden");
@@ -570,7 +704,24 @@ async function nextYear() {
       totals[k] += v;
       flyIcon(tileEl(i), k, v);
     }
-    await sleep(170);
+    await sleep(150);
+  }
+
+  // השפעות שכנות: בית ליד מבנה מזהם סובל, ליד ירוק נהנה
+  const nn = S.size;
+  for (const i of built) {
+    if (!TILES[S.grid[i]].homes) continue;
+    const x = i % nn, y = Math.floor(i / nn);
+    const neigh = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+      .map(([dx, dy]) => (x + dx >= 0 && x + dx < nn && y + dy >= 0 && y + dy < nn) ? S.grid[(y + dy) * nn + (x + dx)] : null);
+    const bad = Math.min(2, neigh.filter(k => POLLUTERS.includes(k)).length);
+    const good = neigh.some(k => GREENERY.includes(k)) ? 1 : 0;
+    const d = good - bad;
+    if (d) {
+      totals.sat += d;
+      flyIcon(tileEl(i), "sat", d);
+      await sleep(150);
+    }
   }
   await sleep(1000);
 
@@ -578,8 +729,22 @@ async function nextYear() {
   for (const [k, v] of Object.entries(totals)) S.meters[k] = clamp(S.meters[k] + v, 0, 100);
   updateMeters(Object.keys(totals));
 
-  // הכנסה שנתית
-  const income = 25 + Math.floor(S.meters.eco / 4);
+  // אוכלוסייה: גדלה לפי דיור פנוי, מקומות עבודה ושביעות רצון
+  const { housing, jobs } = cityStats();
+  const target = Math.min(housing, Math.round(jobs * 1.3));
+  const growth = Math.round((target - S.pop) * 0.3 * (S.meters.sat / 100 + 0.3));
+  S.pop = Math.max(0, S.pop + growth);
+  if (S.meters.sat <= 25) S.pop = Math.round(S.pop * 0.95);
+  updatePop();
+  if (growth > 5) toast(`👥 ${growth} תושבים חדשים הצטרפו לעיר!`);
+  if (S.pop > jobs + 20) {
+    S.meters.sat = clamp(S.meters.sat - 2, 0, 100);
+    updateMeters(["sat"]);
+    toast("😟 אבטלה בעיר — חסרים מקומות עבודה!");
+  }
+
+  // הכנסה שנתית — בסיס + כלכלה + ארנונת תושבים
+  const income = 25 + Math.floor(S.meters.eco / 4) + Math.floor(S.pop / 25);
   S.money += income;
   updateWallet();
   sfx("coin");
@@ -594,11 +759,20 @@ async function nextYear() {
 
   // שנת בנייה (כל 5 שנים)
   if (S.year % 5 === 0) {
-    S.money += GRANT;
+    let grant = GRANT;
+    // הרחבת העיר בשנים 10 ו־20
+    if (EXPANSION_YEARS.includes(S.year) && S.size < 6) {
+      const newTiles = (S.size + 1) ** 2 - S.size ** 2;
+      grant += newTiles * 110;
+      expandBoard();
+      sfx("unlock");
+      toast(`🏗️ העיר מתרחבת! נוספו ${newTiles} משבצות חדשות`, "unlock");
+    }
+    S.money += grant;
     updateWallet();
     await sleep(400);
     sfx("coin");
-    toast(`🏛️ מענק ממשלתי: +${GRANT} 💰`, "unlock");
+    toast(`🏛️ מענק ממשלתי: +${grant} 💰`, "unlock");
     let unlocked = false;
     for (const [key, t] of Object.entries(TILES)) {
       if (t.unlock === S.year) { unlocked = true; toast(`🔓 נפתח מבנה חדש: ${t.name}!`, "unlock"); }
@@ -621,7 +795,7 @@ function endGame(won, reason) {
   const green = S.grid.filter(k => GREEN.includes(k)).length;
   const score = Math.round(
     S.meters.sat + S.meters.eco + S.meters.eng + S.meters.env +
-    Math.floor(S.money / 10) + green * 15
+    Math.floor(S.money / 10) + green * 15 + Math.floor(S.pop / 20)
   );
   const stars = !won ? "💔" : score >= 380 ? "⭐⭐⭐" : score >= 290 ? "⭐⭐" : "⭐";
 
@@ -635,6 +809,7 @@ function endGame(won, reason) {
     <div class="end-stat">📈 כלכלה<div class="es-val">${Math.round(S.meters.eco)}</div></div>
     <div class="end-stat">🌿 איכות הסביבה<div class="es-val">${Math.round(S.meters.env)}</div></div>
     <div class="end-stat">⚡ אנרגיה<div class="es-val">${Math.round(S.meters.eng)}</div></div>
+    <div class="end-stat">👥 תושבים<div class="es-val">${S.pop.toLocaleString("he-IL")}</div></div>
     <div class="end-stat">💰 קופת העיר<div class="es-val">${S.money}</div></div>
     <div class="end-stat">🌱 מבני אנרגיה נקייה<div class="es-val">${green}</div></div>`;
 
@@ -649,12 +824,14 @@ function startGame(size) {
   S.size = size;
   S.money = size === 3 ? 1500 : 2600;
   S.meters = { sat: 50, eco: 50, env: 70, eng: 50 };
+  S.pop = 0;
   S.year = 0;
   S.decisionPool = shuffle([...DECISIONS.keys()]);
   buildBoard();
   buildTimeline();
   updateMeters();
   updateWallet();
+  updatePop();
   $("#overlay").classList.add("hidden");
   $("#modal-start").classList.add("hidden");
   toast("🔨 מלאו את כל המשבצות במבנים, ואז לחצו על ✅ סיום בנייה");
