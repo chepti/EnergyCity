@@ -99,6 +99,19 @@ body {
 .m-fill.warn { background: linear-gradient(90deg, #ffc44d, #f2a021); }
 .m-fill.danger { background: linear-gradient(90deg, #ff7b6e, #d8402f); }
 
+#btn-sound {
+  border: 1.5px solid rgba(255,255,255,.35);
+  background: var(--deep2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 17px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(10,35,40,.35);
+  transition: transform .1s;
+}
+#btn-sound:hover { transform: scale(1.08); }
+
 #wallet {
   background: linear-gradient(135deg, #ffe9a8, #ffd257);
   border: 2px solid #e0a92e;
@@ -357,6 +370,20 @@ body {
 @keyframes drift {
   from { right: -140px; }
   to { right: calc(100% + 140px); }
+}
+
+/* שקיעה הדרגתית — מתחזקת עם השנים */
+#daylight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 26;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  background: linear-gradient(180deg,
+    rgba(255,152,64,.42) 0%,
+    rgba(240,100,90,.30) 45%,
+    rgba(84,48,130,.42) 100%);
 }
 
 /* סירת מפרש בים */

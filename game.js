@@ -99,6 +99,42 @@ function fxParts(fx, money) {
 const fxHtml = (fx, money) =>
   fxParts(fx, money).map(p => `<b class="${p.good ? "plus" : "minus"}">${p.txt}</b>`).join(" ") || "ללא השפעה";
 
+/* ---------- צלילים (Web Audio, ללא קבצים) ---------- */
+let audioCtx = null;
+let muted = false;
+
+function sfx(kind) {
+  if (muted) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const t0 = audioCtx.currentTime;
+    const beep = (freq, start, dur, wave = "sine", vol = 0.14, slideTo = 0) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = wave;
+      o.frequency.setValueAtTime(freq, t0 + start);
+      if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + start + dur);
+      g.gain.setValueAtTime(vol, t0 + start);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + start + dur);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t0 + start);
+      o.stop(t0 + start + dur + 0.02);
+    };
+    switch (kind) {
+      case "select":   beep(520, 0, 0.07, "sine", 0.1); break;
+      case "place":    beep(300, 0, 0.1, "triangle", 0.18); beep(470, 0.06, 0.14, "triangle", 0.16); break;
+      case "demolish": beep(230, 0, 0.28, "sawtooth", 0.1, 85); break;
+      case "coin":     beep(880, 0, 0.08, "square", 0.06); beep(1318, 0.07, 0.13, "square", 0.06); break;
+      case "decision": beep(392, 0, 0.1, "sine", 0.12); beep(523, 0.11, 0.16, "sine", 0.12); break;
+      case "year":     beep(523, 0, 0.09, "triangle", 0.1); beep(659, 0.09, 0.09, "triangle", 0.1); beep(784, 0.18, 0.16, "triangle", 0.1); break;
+      case "unlock":   beep(523, 0, 0.1, "triangle", 0.12); beep(784, 0.1, 0.1, "triangle", 0.12); beep(1046, 0.2, 0.22, "triangle", 0.12); break;
+      case "error":    beep(190, 0, 0.14, "square", 0.08); break;
+      case "win":      [523, 659, 784, 1046].forEach((f, i) => beep(f, i * 0.14, i === 3 ? 0.5 : 0.14, "triangle", 0.13)); break;
+      case "lose":     beep(330, 0, 0.3, "sawtooth", 0.1, 165); beep(165, 0.3, 0.55, "sawtooth", 0.1, 82); break;
+    }
+  } catch (e) { /* אין תמיכה בשמע — ממשיכים בשקט */ }
+}
+
 function toast(msg, cls = "") {
   const el = document.createElement("div");
   el.className = "toast " + cls;
@@ -127,11 +163,12 @@ function buildBoard() {
   board.style.width = boardW + "px";
   board.style.height = boardH + "px";
 
-  // חצי־אי אורגני מתחת לעיר — קו חוף לא אחיד, מזח, סירה ואיון
+  // חצי־אי — צמוד למשבצות למעלה, לשון יבשה עם גבעות נמשכת שמאלה, מזח וכביש גישה
   const gTop = TILE_DIV_H - 93;                    // ראש מעוין הקרקע העליון
   const icx = boardW / 2, icy = gTop + (n * TH) / 2;
   const irx = boardW / 2, iry = (n * TH) / 2;
-  const margins = [72, 96, 58, 112, 82, 138, 100, 74, 64, 108, 86, 58, 92, 124, 68, 94];
+  //            0=ימין 2=ימין-מטה 4=מטה 6=שמאל-מטה 8=שמאל 10=שמאל-מעלה 12=מעלה 14=ימין-מעלה
+  const margins = [90, 72, 84, 104, 92, 120, 170, 300, 430, 280, 120, 34, 26, 30, 44, 64];
   const K = margins.length;
   const coastPt = (k, frac) => {                   // נקודה במרחק frac מרוחב החוף מעבר למעוין
     const a = (k / K) * Math.PI * 2;
@@ -149,27 +186,42 @@ function buildBoard() {
     }
     return d + " Z";
   };
-  const treeAt = (k, sc) => {
-    const [x, y] = coastPt(k, 0.4);
+  const treeAt = (k, sc, frac = 0.4) => {
+    const [x, y] = coastPt(k, frac);
     return `<g transform="translate(${x},${y}) scale(${sc})">
       <rect x="-1.5" y="-2" width="3" height="9" fill="#7a5230"/>
       <circle cx="0" cy="-7" r="8" fill="#3e9440"/><circle cx="-5" cy="-3" r="5" fill="#4ca64c"/></g>`;
   };
-  const bushAt = (k, sc) => {
-    const [x, y] = coastPt(k, 0.55);
+  const bushAt = (k, sc, frac = 0.55) => {
+    const [x, y] = coastPt(k, frac);
     return `<g transform="translate(${x},${y}) scale(${sc})"><circle r="5" fill="#5cbf5a"/><circle cx="5" cy="2" r="3.5" fill="#6fd06d"/></g>`;
   };
   const [px, py] = coastPt(4, 0.9);                // תחתית — שם המזח
-  const pad = 175;
+  const [hx, hy] = coastPt(8, 0.5);                // אמצע הלשון — שם הגבעות
+  const roadEndY = gTop + n * TH + 14;             // תחתית בסיס המשבצת הקדמית
+  const roadD = `M ${icx},${roadEndY} Q ${icx + 12},${(roadEndY + py) / 2} ${px},${py - 4}`;
+  const padL = 540, pad = 175;
   const island = document.createElement("div");
   island.className = "island";
-  island.style.cssText = `position:absolute;left:${-pad}px;top:${gTop - pad}px;width:${boardW + 2 * pad}px;height:${n * TH + 2 * pad}px;z-index:0;pointer-events:none;`;
-  island.innerHTML = `<svg width="100%" height="100%" viewBox="${-pad} ${gTop - pad} ${boardW + 2 * pad} ${n * TH + 2 * pad}">
-    <path d="${pathFor(1.18)}" fill="rgba(255,255,255,.17)"/>
+  island.style.cssText = `position:absolute;left:${-padL}px;top:${gTop - pad}px;width:${boardW + padL + pad}px;height:${n * TH + 2 * pad}px;z-index:0;pointer-events:none;`;
+  island.innerHTML = `<svg width="100%" height="100%" viewBox="${-padL} ${gTop - pad} ${boardW + padL + pad} ${n * TH + 2 * pad}">
+    <path d="${pathFor(1.16)}" fill="rgba(255,255,255,.17)"/>
     <path d="${pathFor(1)}" fill="#eed985" stroke="rgba(255,255,255,.6)" stroke-width="4"/>
-    <path d="${pathFor(0.88)}" fill="#8ac263"/>
-    ${treeAt(1, 0.9)}${treeAt(3, 0.75)}${treeAt(7, 0.85)}${treeAt(10, 0.7)}${treeAt(13, 0.95)}${treeAt(15, 0.7)}
-    ${bushAt(2, 1)}${bushAt(6, 0.9)}${bushAt(9, 1.1)}${bushAt(12, 0.8)}${bushAt(14, 1)}
+    <path d="${pathFor(0.86)}" fill="#8ac263"/>
+    <path d="${roadD}" fill="none" stroke="#c9b06b" stroke-width="17" stroke-linecap="round"/>
+    <path d="${roadD}" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="9 13" opacity=".75"/>
+    <g transform="translate(${hx},${hy})">
+      <path d="M-160,10 Q-100,-100 -30,10 Z" fill="#5f9a43"/>
+      <path d="M-75,10 Q-8,-145 70,10 Z" fill="#548c3b"/>
+      <path d="M-26,-68 q24,-32 52,0 l-8,10 q-20,-24 -38,0 Z" fill="#69a84c" opacity=".9"/>
+      <path d="M35,10 Q95,-85 155,10 Z" fill="#69a84c"/>
+      <g fill="#3e9440">
+        <circle cx="-120" cy="-6" r="7"/><circle cx="-48" cy="2" r="6"/>
+        <circle cx="110" cy="-4" r="7"/><circle cx="12" cy="4" r="5"/>
+      </g>
+    </g>
+    ${treeAt(1, 0.9)}${treeAt(3, 0.75)}${treeAt(5, 0.85)}${treeAt(6, 0.9, 0.3)}${treeAt(9, 0.9, 0.55)}${treeAt(15, 0.7)}
+    ${bushAt(0, 1)}${bushAt(2, 0.9)}${bushAt(7, 1.2, 0.35)}${bushAt(9, 1, 0.3)}${bushAt(10, 0.9)}
     <g transform="translate(${px},${py}) rotate(16)">
       <rect x="-7" y="-6" width="14" height="66" rx="3" fill="#b98a52" stroke="#8a6a3e" stroke-width="1.5"/>
       <g stroke="#8a6a3e" stroke-width="2">
@@ -180,7 +232,7 @@ function buildBoard() {
     <g transform="translate(${px + 40},${py + 42})">
       <ellipse rx="17" ry="6" fill="#c9553e"/><ellipse cy="-2" rx="12" ry="3" fill="#e8eef4"/>
     </g>
-    <g transform="translate(${icx + irx + 108},${gTop + 4})">
+    <g transform="translate(${icx + irx + 108},${gTop + 30})">
       <ellipse rx="27" ry="12" fill="#eed985"/><ellipse rx="16" ry="7" fill="#86c161"/>
       <rect x="2" y="-8" width="2.5" height="7" fill="#7a5230"/><circle cx="3" cy="-11" r="5.5" fill="#3e9440"/>
     </g>
@@ -258,6 +310,7 @@ function onTileClick(i) {
       S.grid[i] = null;
       S.money += refund;
       renderTile(i);
+      sfx("demolish");
       toast(`🚜 נהרס — קיבלתם החזר של ${refund} 💰`);
       updateWallet();
       renderShop();
@@ -266,11 +319,12 @@ function onTileClick(i) {
     if (S.tool) {
       if (key) { showTileInfo(i); return; }
       const t = TILES[S.tool];
-      if (t.cost > S.money) { toast("אין מספיק כסף! 💰"); return; }
+      if (t.cost > S.money) { sfx("error"); toast("אין מספיק כסף! 💰"); return; }
       S.money -= t.cost;
       S.grid[i] = S.tool;
       renderTile(i);
       tileEl(i).classList.add("pop");
+      sfx("place");
       updateWallet();
       renderShop();
       return;
@@ -340,7 +394,7 @@ function renderShop() {
           <div class="si-fx">${fxHtml(t.fx)}</div>
         </div>
         ${locked ? `<span class="si-lock">🔒 שנה ${t.unlock}</span>` : ""}`;
-      if (!locked && !poor) el.addEventListener("click", () => { S.tool = S.tool === key ? null : key; renderShop(); updateTileCursors(); });
+      if (!locked && !poor) el.addEventListener("click", () => { S.tool = S.tool === key ? null : key; sfx("select"); renderShop(); updateTileCursors(); });
       box.appendChild(el);
     }
   }
@@ -451,6 +505,8 @@ function updateTimeline() {
     d.classList.toggle("current", idx === S.year);
   });
   $("#year-val").textContent = S.year;
+  // שקיעה הדרגתית לאורך 30 השנים
+  $("#daylight").style.opacity = (S.year / YEARS_TOTAL) * 0.75;
 }
 
 /* ---------- החלטה שנתית ---------- */
@@ -471,12 +527,14 @@ function showDecision(dec) {
       b.className = "dec-opt";
       b.innerHTML = `<div class="do-title">${opt.label}</div><div class="do-fx">${fxHtml(opt.fx, opt.money)}</div>`;
       b.addEventListener("click", () => {
+        sfx("select");
         $("#overlay").classList.add("hidden");
         $("#modal-decision").classList.add("hidden");
         resolve(opt);
       });
       box.appendChild(b);
     });
+    sfx("decision");
     $("#overlay").classList.remove("hidden");
     $("#modal-decision").classList.remove("hidden");
   });
@@ -499,6 +557,7 @@ async function nextYear() {
   // קידום שנה
   S.year++;
   updateTimeline();
+  sfx("year");
   S.phase = "sim";
 
   // השפעות המבנים — אייקונים מרחפים
@@ -523,6 +582,7 @@ async function nextYear() {
   const income = 25 + Math.floor(S.meters.eco / 4);
   S.money += income;
   updateWallet();
+  sfx("coin");
   toast(`📅 שנה ${S.year}: הכנסה שנתית +${income} 💰`);
 
   // קריסה?
@@ -537,10 +597,13 @@ async function nextYear() {
     S.money += GRANT;
     updateWallet();
     await sleep(400);
+    sfx("coin");
     toast(`🏛️ מענק ממשלתי: +${GRANT} 💰`, "unlock");
+    let unlocked = false;
     for (const [key, t] of Object.entries(TILES)) {
-      if (t.unlock === S.year) toast(`🔓 נפתח מבנה חדש: ${t.name}!`, "unlock");
+      if (t.unlock === S.year) { unlocked = true; toast(`🔓 נפתח מבנה חדש: ${t.name}!`, "unlock"); }
     }
+    if (unlocked) sfx("unlock");
     S.busy = false;
     enterBuild(false);
     return;
@@ -554,6 +617,7 @@ async function nextYear() {
 /* ---------- סוף משחק ---------- */
 function endGame(won, reason) {
   S.phase = "end";
+  sfx(won ? "win" : "lose");
   const green = S.grid.filter(k => GREEN.includes(k)).length;
   const score = Math.round(
     S.meters.sat + S.meters.eco + S.meters.eng + S.meters.env +
@@ -602,9 +666,16 @@ document.querySelectorAll(".size-btns button").forEach(b =>
 
 $("#btn-done-build").addEventListener("click", () => {
   const empty = S.grid.filter(k => !k).length;
-  if (empty) { toast(`יש למלא את כל המשבצות! נשארו ${empty} פנויות 🔨`); return; }
-  if (!S.grid.some(k => TILES[k]?.fx.eng > 0)) { toast("⚡ אין לעיר מקור אנרגיה! בנו תחנת כוח"); return; }
+  if (empty) { sfx("error"); toast(`יש למלא את כל המשבצות! נשארו ${empty} פנויות 🔨`); return; }
+  if (!S.grid.some(k => TILES[k]?.fx.eng > 0)) { sfx("error"); toast("⚡ אין לעיר מקור אנרגיה! בנו תחנת כוח"); return; }
+  sfx("place");
   exitBuild();
+});
+
+$("#btn-sound").addEventListener("click", () => {
+  muted = !muted;
+  $("#btn-sound").textContent = muted ? "🔇" : "🔊";
+  if (!muted) sfx("select");
 });
 
 $("#btn-bulldoze").addEventListener("click", () => {
