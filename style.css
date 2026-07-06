@@ -471,6 +471,38 @@ body {
 .ti-fx b.plus { color: var(--good); }
 .ti-fx b.minus { color: var(--bad); }
 .ti-cost { margin-top: 9px; font-size: 12px; color: #9a6d12; font-weight: 700; }
+.ti-damaged {
+  background: #fdeae8;
+  color: #c0392b;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 8px 0;
+  text-align: center;
+}
+.ti-repair {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #5bbd6a, #3fae4c);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 9px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #2f8c3a;
+  transition: transform .1s, box-shadow .1s;
+}
+.ti-repair:hover { transform: translateY(-1px); }
+.ti-repair:active { transform: translateY(2px); box-shadow: 0 1px 0 #2f8c3a; }
+.ti-repair:disabled { opacity: .5; cursor: not-allowed; filter: grayscale(.5); }
+
+/* מבנה שנהרס באסון */
+.tile.ruined svg.bld { filter: drop-shadow(0 3px 3px rgba(30,50,40,.3)); }
+.tile.ruined .g-top { fill: #d8c9a0; }
+.tile.ruined:hover .g-top { fill: #ffd9a0; }
 
 /* עננים */
 .cloud {
@@ -663,6 +695,49 @@ body {
   font-weight: 800;
   margin-bottom: 6px;
 }
+
+/* מודל אסון טבע */
+#modal-disaster { border-top: 6px solid var(--bad); }
+.disaster-tag {
+  display: inline-block;
+  background: #fdeae8;
+  color: #c0392b;
+  border-radius: 10px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+#modal-disaster h2 { color: #c0392b; }
+#dis-illu {
+  width: 100px;
+  height: 100px;
+  margin: 8px auto 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #ffe0d6, #ffb3a0);
+  border: 3px solid #e2574c;
+  box-shadow: 0 6px 20px rgba(226,87,76,.4);
+  font-size: 54px;
+  line-height: 96px;
+  text-align: center;
+  animation: disShake .5s ease-in-out 3;
+}
+@keyframes disShake {
+  0%,100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-5px) rotate(-4deg); }
+  75% { transform: translateX(5px) rotate(4deg); }
+}
+#dis-fx {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 14px 0 18px;
+}
+#dis-fx b.plus { color: var(--good); }
+#dis-fx b.minus { color: var(--bad); }
 #dec-desc { font-size: 15px; line-height: 1.7; color: #445; margin-bottom: 16px; }
 
 #dec-illu {

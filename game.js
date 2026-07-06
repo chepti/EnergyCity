@@ -105,6 +105,27 @@ const DECISIONS = [
     opts: [{ label: "להצטרף", money: -80, fx: { sat: 3 }, jobs: 40, perYear: { env: 1 } }, { label: "לוותר", fx: {} }] },
 ];
 
+/* ---------- אסונות טבע ---------- */
+// ruin = כמה מבנים נהרסים · safe = מבנה שמרכך את הפגיעה · popLoss = אחוז תושבים שעוזבים
+const DISASTERS = [
+  { emoji: "🔥", name: "שריפה גדולה", desc: "אש פרצה באחד המבנים והתפשטה לשכנים. הכבאים נלחמים בלהבות.",
+    ruin: 2, fx: { sat: -3, env: -2 }, money: -30, safe: "hospital" },
+  { emoji: "🌊", name: "שיטפון", desc: "גשמי זעף הציפו את העיר. מבנים נפגעו והרחובות מוצפים.",
+    ruin: 2, fx: { env: -5, sat: -3 }, money: -50 },
+  { emoji: "🌪️", name: "סופת הוריקן", desc: "רוחות עזות תלשו גגות והפילו קווי חשמל ברחבי העיר.",
+    ruin: 2, fx: { eng: -8, sat: -3 }, money: -40 },
+  { emoji: "🏚️", name: "רעידת אדמה", desc: "האדמה רעדה בעוצמה. כמה מבנים קרסו וזקוקים לשיקום דחוף.",
+    ruin: 3, fx: { sat: -4 }, money: -70 },
+  { emoji: "🦠", name: "מגפה", desc: "מחלה מדבקת פשטה בעיר. התושבים חוששים לצאת מהבית והעסקים נסגרים.",
+    ruin: 0, fx: { sat: -6, eco: -6 }, popLoss: 0.12, safe: "hospital" },
+  { emoji: "📉", name: "מיתון כלכלי", desc: "משבר כלכלי עולמי פגע קשות בעסקי העיר. ההכנסות צנחו.",
+    ruin: 0, fx: { eco: -12 }, money: -90 },
+  { emoji: "⚡", name: "קריסת רשת החשמל", desc: "עומס יתר גרם לקריסת רשת החשמל האזורית. העיר בחושך.",
+    ruin: 0, fx: { eng: -14, sat: -3 } },
+  { emoji: "🐛", name: "מכת מזיקים", desc: "נחיל חרקים תקף את הגינות, הפארקים והשטחים הירוקים בעיר.",
+    ruin: 0, fx: { env: -8, sat: -2 } },
+];
+
 /* ---------- קבועים ---------- */
 const TW = 150, TH = 75, TILE_DIV_H = 180;
 const YEARS_TOTAL = 30;
@@ -126,6 +147,8 @@ const S = {
   pop: 0,            // תושבים
   bonusJobs: 0,      // משרות מהחלטות מועצה
   policies: [],      // השפעות מתמשכות מהחלטות (fx לכל שנה)
+  ruins: [],         // אינדקסים של מבנים שנהרסו באסון (לא פעילים עד שיקום)
+  lastDisaster: -9,  // השנה של האסון האחרון (למניעת אסונות רצופים)
   year: 0,
   phase: "start",    // start | build | idle | sim | end
   tool: null,        // מפתח מבנה, "bulldoze" או null
@@ -332,22 +355,25 @@ function tileEl(i) { return $("#board").querySelectorAll(".tile")[i]; }
 // הרחבת העיר — שורה ועמודה חדשות, המבנים הקיימים נשארים במקומם
 function expandBoard() {
   const old = S.grid, oldN = S.size;
+  const oldRuins = S.ruins;
   S.size++;
   buildBoard();
   for (let y = 0; y < oldN; y++)
     for (let x = 0; x < oldN; x++)
       S.grid[y * S.size + x] = old[y * oldN + x];
+  // מיפוי אינדקסי ההריסות לרשת החדשה (המבנים לא זזים אך האינדקס משתנה)
+  S.ruins = oldRuins.map(r => Math.floor(r / oldN) * S.size + (r % oldN));
   S.grid.forEach((k, i) => { if (k) renderTile(i); });
 }
 
 // דיור ותעסוקה בעיר
 function cityStats() {
   let housing = 0, jobs = S.bonusJobs;
-  for (const k of S.grid) {
-    if (!k) continue;
+  S.grid.forEach((k, i) => {
+    if (!k || S.ruins.includes(i)) return;   // הריסות אינן פעילות
     housing += TILES[k].homes || 0;
     jobs += TILES[k].jobs || 0;
-  }
+  });
   return { housing, jobs };
 }
 
@@ -365,14 +391,16 @@ function renderTile(i) {
   el.title = "";
   el.classList.remove("pop");
   el.classList.toggle("hasb", !!key);
+  const ruined = S.ruins.includes(i);
+  el.classList.toggle("ruined", ruined);
   if (key) {
     const t = TILES[key];
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "bld");
     svg.setAttribute("viewBox", "0 0 100 100");
-    svg.innerHTML = `<use href="#${t.icon}"/>`;
+    svg.innerHTML = `<use href="#${ruined ? "s-rubble" : t.icon}"/>`;
     el.appendChild(svg);
-    el.title = `${t.name} — בכל שנה: ` + fxParts(t.fx).map(p => p.txt).join("  ");
+    el.title = ruined ? `${t.name} — נהרס באסון! לחצו לשיקום` : `${t.name} — בכל שנה: ` + fxParts(t.fx).map(p => p.txt).join("  ");
   }
   updateTileCursors();
 }
@@ -390,6 +418,10 @@ function refundFor(key) {
   return TILES[key].cost;
 }
 
+function repairCost(key) {
+  return Math.round(TILES[key].cost * 0.6);
+}
+
 function onTileClick(i) {
   hideTileInfo();
   const key = S.grid[i];
@@ -397,12 +429,14 @@ function onTileClick(i) {
   if (S.phase === "build") {
     if (S.tool === "bulldoze") {
       if (!key) return;
-      const refund = refundFor(key);
+      const wasRuined = S.ruins.includes(i);
+      const refund = wasRuined ? 0 : refundFor(key);
       S.grid[i] = null;
+      S.ruins = S.ruins.filter(x => x !== i);
       S.money += refund;
       renderTile(i);
       sfx("demolish");
-      toast(`🚜 נהרס — קיבלתם החזר של ${refund} 💰`);
+      toast(wasRuined ? "🚜 ההריסות פונו" : `🚜 נהרס — קיבלתם החזר של ${refund} 💰`);
       updateWallet();
       updatePop();
       renderShop();
@@ -436,18 +470,34 @@ function showTileInfo(i) {
   if (!key) return;
   const t = TILES[key];
   const panel = $("#tile-info");
+  const ruined = S.ruins.includes(i);
   const rows = Object.entries(t.fx).filter(([, v]) => v).map(([k, v]) =>
     `<li><span>${METER_META[k].emoji(v)} ${METER_META[k].label}</span><b class="${v > 0 ? "plus" : "minus"}">${v > 0 ? "+" : ""}${v}</b></li>`
   ).join("")
     + (t.homes ? `<li><span>👥 מקומות מגורים</span><b class="plus">+${t.homes}</b></li>` : "")
     + (t.jobs ? `<li><span>💼 מקומות עבודה</span><b class="plus">+${t.jobs}</b></li>` : "");
+  const rc = repairCost(key);
   panel.innerHTML = `
-    <div class="ti-head"><svg viewBox="0 0 100 100"><use href="#${t.icon}"/></svg><span>${t.name}</span><button class="ti-close">✕</button></div>
-    <div class="ti-sub">השפעה על העיר בכל שנה:</div>
-    <ul class="ti-fx">${rows}</ul>
-    ${S.phase === "build" ? `<div class="ti-cost">🚜 הריסה תחזיר ${refundFor(key)} 💰</div>` : ""}`;
+    <div class="ti-head"><svg viewBox="0 0 100 100"><use href="#${ruined ? "s-rubble" : t.icon}"/></svg><span>${t.name}</span><button class="ti-close">✕</button></div>
+    ${ruined
+      ? `<div class="ti-damaged">🏚️ המבנה נהרס באסון ואינו פעיל</div>
+         <button class="ti-repair" ${S.money < rc ? "disabled" : ""}>🔧 שיקום — ${rc} 💰</button>`
+      : `<div class="ti-sub">השפעה על העיר בכל שנה:</div>
+         <ul class="ti-fx">${rows}</ul>
+         ${S.phase === "build" ? `<div class="ti-cost">🚜 הריסה תחזיר ${refundFor(key)} 💰</div>` : ""}`}`;
   panel.classList.remove("hidden");
   panel.querySelector(".ti-close").addEventListener("click", hideTileInfo);
+  panel.querySelector(".ti-repair")?.addEventListener("click", () => {
+    if (S.money < rc) { sfx("error"); toast("אין מספיק כסף לשיקום 💰"); return; }
+    S.money -= rc;
+    S.ruins = S.ruins.filter(x => x !== i);
+    renderTile(i);
+    sfx("place");
+    updateWallet();
+    updatePop();
+    hideTileInfo();
+    toast(`🔧 ${t.name} שוקם בהצלחה!`);
+  });
 
   const r = tileEl(i).getBoundingClientRect();
   const pw = 240;
@@ -714,6 +764,65 @@ function showDecision(dec) {
   });
 }
 
+/* ---------- אסון טבע ---------- */
+function showDisaster(dis, ruinCount, mitigated) {
+  return new Promise(resolve => {
+    $("#dis-year").textContent = S.year;
+    $("#dis-illu").textContent = dis.emoji;
+    $("#dis-title").textContent = dis.name;
+    $("#dis-desc").textContent = dis.desc;
+    const parts = fxParts(dis.fx, dis.money || 0);
+    let html = parts.map(p => `<b class="${p.good ? "plus" : "minus"}">${p.txt}</b>`).join(" ");
+    if (ruinCount) html += ` <b class="minus">🏚️ ${ruinCount} מבנים נהרסו</b>`;
+    if (dis.popLoss) html += ` <b class="minus">👥 תושבים עזבו</b>`;
+    if (mitigated) html += ` <b class="plus">🏥 בית החולים ריכך את הפגיעה</b>`;
+    $("#dis-fx").innerHTML = html;
+    const ok = $("#dis-ok");
+    const handler = () => {
+      ok.removeEventListener("click", handler);
+      $("#overlay").classList.add("hidden");
+      $("#modal-disaster").classList.add("hidden");
+      resolve();
+    };
+    ok.addEventListener("click", handler);
+    sfx("lose");
+    $("#overlay").classList.remove("hidden");
+    $("#modal-disaster").classList.remove("hidden");
+  });
+}
+
+// מגריל ומפעיל אסון טבע; מחזיר true אם התרחש
+async function maybeDisaster() {
+  if (S.year < 4 || S.year === S.lastDisaster + 1) return;
+  if (Math.random() >= 0.24) return;
+  S.lastDisaster = S.year;
+  const dis = DISASTERS[Math.floor(Math.random() * DISASTERS.length)];
+  const hasHospital = S.grid.some((k, i) => k === "hospital" && !S.ruins.includes(i));
+  const mitigated = dis.safe === "hospital" && hasHospital;
+
+  // בחירת מבנים להריסה
+  const candidates = S.grid.map((k, i) => (k && !S.ruins.includes(i)) ? i : -1).filter(i => i >= 0);
+  shuffle(candidates);
+  let ruinN = dis.ruin;
+  if (mitigated) ruinN = Math.max(0, ruinN - 1);
+  const ruined = candidates.slice(0, ruinN);
+
+  await showDisaster(dis, ruined.length, mitigated);
+
+  // החלת הנזק אחרי אישור השחקן
+  const dfx = {};
+  for (const [k, v] of Object.entries(dis.fx)) dfx[k] = mitigated ? Math.round(v * 0.5) : v;
+  applyFx(dfx, dis.money || 0);
+  ruined.forEach(i => { S.ruins.push(i); renderTile(i); });
+  if (ruined.length) sfx("demolish");
+  if (dis.popLoss) {
+    S.pop = Math.round(S.pop * (1 - dis.popLoss * (mitigated ? 0.5 : 1)));
+    updatePop();
+  }
+  await sleep(700);
+  return true;
+}
+
 /* ---------- מהלך שנה ---------- */
 async function nextYear() {
   if (S.busy) return;
@@ -737,9 +846,9 @@ async function nextYear() {
   sfx("year");
   S.phase = "sim";
 
-  // השפעות המבנים — אייקונים מרחפים
+  // השפעות המבנים — אייקונים מרחפים (הריסות אינן מייצרות דבר)
   const totals = { sat: 0, eco: 0, env: 0, eng: 0 };
-  const built = S.grid.map((k, i) => k ? i : -1).filter(i => i >= 0);
+  const built = S.grid.map((k, i) => (k && !S.ruins.includes(i)) ? i : -1).filter(i => i >= 0);
   for (const i of built) {
     const t = TILES[S.grid[i]];
     for (const [k, v] of Object.entries(t.fx)) {
@@ -750,13 +859,14 @@ async function nextYear() {
     await sleep(150);
   }
 
-  // השפעות שכנות: בית ליד מבנה מזהם סובל, ליד ירוק נהנה
+  // השפעות שכנות: בית ליד מבנה מזהם סובל, ליד ירוק נהנה (הריסות אינן נחשבות)
   const nn = S.size;
+  const activeKey = j => (S.ruins.includes(j) ? null : S.grid[j]);
   for (const i of built) {
     if (!TILES[S.grid[i]].homes) continue;
     const x = i % nn, y = Math.floor(i / nn);
     const neigh = [[1, 0], [-1, 0], [0, 1], [0, -1]]
-      .map(([dx, dy]) => (x + dx >= 0 && x + dx < nn && y + dy >= 0 && y + dy < nn) ? S.grid[(y + dy) * nn + (x + dx)] : null);
+      .map(([dx, dy]) => (x + dx >= 0 && x + dx < nn && y + dy >= 0 && y + dy < nn) ? activeKey((y + dy) * nn + (x + dx)) : null);
     const bad = Math.min(2, neigh.filter(k => POLLUTERS.includes(k)).length);
     const good = neigh.some(k => GREENERY.includes(k)) ? 1 : 0;
     const d = good - bad;
@@ -772,9 +882,9 @@ async function nextYear() {
   for (const p of S.policies)
     for (const [k, v] of Object.entries(p)) totals[k] += v;
 
-  // בלאי שנתי — התושבים מתרגלים לטוב והתשתיות מתיישנות
-  totals.sat -= 1;
-  totals.eco -= 1;
+  // בלאי שנתי — ככל שהעיר גדולה יותר, קשה יותר לתחזק אותה ולרצות את התושבים
+  totals.sat -= 1 + Math.floor(S.pop / 220);
+  totals.eco -= 2;
 
   // עדכון מדדים
   for (const [k, v] of Object.entries(totals)) S.meters[k] = clamp(S.meters[k] + v, 0, 100);
@@ -794,12 +904,27 @@ async function nextYear() {
     toast("😟 אבטלה בעיר — חסרים מקומות עבודה!");
   }
 
-  // הכנסה שנתית — בסיס + כלכלה + ארנונת תושבים
-  const income = 15 + Math.floor(S.meters.eco / 5) + Math.floor(S.pop / 40);
-  S.money += income;
+  // תקציב שנתי: הכנסה (כלכלה + ארנונה) פחות אחזקת מבנים
+  const gross = 12 + Math.floor(S.meters.eco / 6) + Math.floor(S.pop / 45);
+  const placed = S.grid.filter(Boolean).length;
+  const upkeep = placed * 4;
+  S.money += gross;
+  if (S.money >= upkeep) {
+    S.money -= upkeep;
+    toast(`📅 שנה ${S.year}: +${gross} 💰 הכנסה · −${upkeep} 💰 אחזקה`);
+  } else {
+    const shortfall = upkeep - S.money;
+    S.money = 0;
+    S.meters.eco = clamp(S.meters.eco - 5, 0, 100);
+    S.meters.sat = clamp(S.meters.sat - 2, 0, 100);
+    updateMeters(["eco", "sat"]);
+    toast(`⚠️ גירעון תקציבי! חסרו ${shortfall} 💰 — הכלכלה נפגעת`);
+  }
   updateWallet();
   sfx("coin");
-  toast(`📅 שנה ${S.year}: הכנסה שנתית +${income} 💰`);
+
+  // אסון טבע אקראי — עלול לגרום לקריסת מדד
+  await maybeDisaster();
 
   // קריסה?
   const reason = crashReason();
@@ -878,6 +1003,8 @@ function startGame(size) {
   S.pop = 0;
   S.bonusJobs = 0;
   S.policies = [];
+  S.ruins = [];
+  S.lastDisaster = -9;
   S.year = 0;
   S.decisionPool = shuffle([...DECISIONS.keys()]);
   buildBoard();
