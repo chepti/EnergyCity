@@ -481,13 +481,18 @@ function renderShop() {
   const flex = document.createElement("div");
   flex.className = "shop-flex";
 
-  // טור קטגוריות קבוע
-  const rail = document.createElement("div");
-  rail.className = "cat-rail";
+  // טור קטגוריות — עמודה אחת קבועה
+  const catCol = document.createElement("div");
+  catCol.className = "cat-col";
   for (const cat of CATS) {
+    const items = Object.entries(TILES).filter(([, t]) => t.cat === cat.name);
+    const openCount = items.filter(([, t]) => !(t.unlock && S.year < t.unlock)).length;
     const el = document.createElement("div");
-    el.className = "cat-tab" + (S.shopCat === cat.name ? " active" : "");
-    el.innerHTML = `<svg viewBox="0 0 100 100"><use href="#${cat.icon}"/></svg><div>${cat.name}</div>`;
+    el.className = "cat-card" + (S.shopCat === cat.name ? " active" : "");
+    el.innerHTML = `
+      <svg viewBox="0 0 100 100"><use href="#${cat.icon}"/></svg>
+      <div class="cc-name">${cat.name}</div>
+      <div class="cc-count">${openCount}/${items.length} מבנים</div>`;
     el.addEventListener("click", () => {
       if (S.shopCat === cat.name) return;
       S.shopCat = cat.name;
@@ -496,13 +501,21 @@ function renderShop() {
       renderShop();
       updateTileCursors();
     });
-    rail.appendChild(el);
+    catCol.appendChild(el);
   }
-  flex.appendChild(rail);
+  flex.appendChild(catCol);
 
-  // טור המבנים של הקטגוריה
-  const pane = document.createElement("div");
-  pane.className = "item-pane";
+  // טור המבנים — נפתח בצד, גולל בעצמו
+  const itemCol = document.createElement("div");
+  itemCol.className = "item-col";
+  const scrollBtn = (dir, edge) => {
+    const b = document.createElement("button");
+    b.className = "col-nav-btn " + edge;
+    b.innerHTML = `<span class="chev chev-${edge}"></span>`;
+    b.addEventListener("click", () => itemCol.scrollBy({ top: dir * 200, behavior: "smooth" }));
+    return b;
+  };
+  itemCol.appendChild(scrollBtn(-1, "up"));
   for (const [key, t] of Object.entries(TILES)) {
     if (t.cat !== S.shopCat) continue;
     const locked = t.unlock && S.year < t.unlock;
@@ -519,11 +532,12 @@ function renderShop() {
       </div>
       ${locked ? `<span class="si-lock">🔒 שנה ${t.unlock}</span>` : ""}`;
     if (!locked && !poor) el.addEventListener("click", () => { S.tool = S.tool === key ? null : key; sfx("select"); renderShop(); updateTileCursors(); });
-    pane.appendChild(el);
+    itemCol.appendChild(el);
   }
-  flex.appendChild(pane);
-  box.appendChild(flex);
+  itemCol.appendChild(scrollBtn(1, "down"));
+  flex.appendChild(itemCol);
 
+  box.appendChild(flex);
   $("#btn-bulldoze").classList.toggle("selected", S.tool === "bulldoze");
 }
 

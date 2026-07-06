@@ -155,62 +155,102 @@ body {
   background: rgba(255,255,255,.85);
   backdrop-filter: blur(6px);
   padding: 12px;
-  overflow-y: auto;
+  overflow: hidden;
   box-shadow: 2px 0 12px rgba(43,58,74,.12);
   z-index: 20;
   display: flex;
   flex-direction: column;
   gap: 8px;
   transition: margin .3s;
+  position: relative;
 }
 #shop.hidden { display: none; }
 
-#shop h2 { font-size: 18px; color: #1d6fa5; }
-#shop-hint { font-size: 12px; color: #667; }
+#shop h2 { font-size: 18px; color: #1d6fa5; flex-shrink: 0; }
+#shop-hint { font-size: 12px; color: #667; flex-shrink: 0; }
 
-/* חנות דו־טורית: פס קטגוריות קבוע + מבני הקטגוריה לצדו */
+/* חנות דו־טורית: טור קטגוריות קבוע (עמודה אחת) + טור מבנים גולל בצד */
+#shop-items { flex: 1; min-height: 0; display: flex; }
 .shop-flex {
   display: flex;
   gap: 8px;
-  align-items: flex-start;
+  width: 100%;
+  min-height: 0;
 }
-.cat-rail {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 72px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-}
-.cat-tab {
-  background: #fff;
-  border: 2px solid #dde5ec;
-  border-radius: 14px;
-  padding: 7px 2px 5px;
-  text-align: center;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 800;
-  color: #556;
-  transition: border-color .15s, background .15s;
-}
-.cat-tab:hover { border-color: var(--accent); }
-.cat-tab.active {
-  border-color: var(--accent);
-  background: #fff7ef;
-  color: #b35a1a;
-  box-shadow: 0 0 0 2px rgba(255,138,60,.18);
-}
-.cat-tab svg { width: 40px; height: 40px; display: block; margin: 0 auto 2px; }
 
-.item-pane {
-  flex: 1;
-  min-width: 0;
+/* טור קטגוריות — עמודה אחת, כרטיסים */
+.cat-col {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 108px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
+.cat-col::-webkit-scrollbar { display: none; }
+.cat-card {
+  background: #fff;
+  border: 2px solid #dde5ec;
+  border-radius: 16px;
+  padding: 10px 4px 8px;
+  text-align: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color .15s, transform .1s, box-shadow .15s;
+}
+.cat-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.cat-card.active {
+  border-color: var(--accent);
+  background: #fff7ef;
+  box-shadow: 0 4px 12px rgba(255,138,60,.25);
+}
+.cat-card svg { width: 58px; height: 58px; }
+.cc-name { font-size: 13.5px; font-weight: 800; margin-top: 4px; }
+.cc-count { font-size: 10.5px; color: #778; margin-top: 1px; }
+
+/* טור המבנים — נפתח בצד, גולל עצמאית */
+.item-col {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: itemColIn .18s ease;
+}
+.item-col::-webkit-scrollbar { display: none; }
+@keyframes itemColIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* צ'ברונים לגלילת טור המבנים — נצמדים לקצוות בזמן גלילה, בלי פס גלילה */
+.col-nav-btn {
+  position: sticky;
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.92);
+  border: 1.5px solid #dde5ec;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(43,58,74,.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, transform .1s;
+  z-index: 2;
+  flex-shrink: 0;
+}
+.col-nav-btn:hover { background: #fff7ef; border-color: var(--accent); transform: scale(1.06); }
+.col-nav-btn.up { top: 0; }
+.col-nav-btn.down { bottom: 0; }
+.chev { display: inline-block; width: 6px; height: 6px; border-right: 2px solid #778; border-bottom: 2px solid #778; }
+.chev-up { transform: rotate(-135deg); margin-top: 2px; }
+.chev-down { transform: rotate(45deg); margin-bottom: 2px; }
 
 /* כרטיס מבנה */
 .shop-sq {
@@ -265,35 +305,6 @@ body {
 .chip.neg { background: #fdeae8; color: #c0392b; }
 .chip.zero { background: #f2f5f8; color: #b6bec7; }
 
-.shop-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: 2px solid #dde5ec;
-  border-radius: 12px;
-  padding: 6px 8px;
-  cursor: pointer;
-  transition: border-color .15s, transform .1s, box-shadow .15s;
-  position: relative;
-}
-.shop-item:hover { border-color: var(--accent); transform: translateY(-1px); }
-.shop-item.selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255,138,60,.25);
-  background: #fff7ef;
-}
-.shop-item.locked, .shop-item.poor { opacity: .55; cursor: not-allowed; }
-.shop-item.locked:hover, .shop-item.poor:hover { border-color: #dde5ec; transform: none; }
-
-.shop-item svg { width: 44px; height: 44px; flex-shrink: 0; }
-
-.si-info { flex: 1; min-width: 0; }
-.si-name { font-size: 13px; font-weight: 700; }
-.si-cost { font-size: 12px; color: #9a6d12; font-weight: 700; }
-.si-fx { font-size: 11px; display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
-.si-fx b.plus { color: var(--good); }
-.si-fx b.minus { color: var(--bad); }
 .si-lock {
   position: absolute;
   inset-inline-end: 8px;
@@ -307,15 +318,12 @@ body {
 
 .shop-actions {
   position: sticky;
-  bottom: -12px;
+  bottom: 10px;
   margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 10px 0 12px;
-  background: rgba(255,255,255,.94);
-  backdrop-filter: blur(4px);
-  box-shadow: 0 -6px 12px rgba(43,58,74,.08);
+  padding-top: 10px;
   z-index: 5;
 }
 
@@ -735,9 +743,9 @@ body {
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
-  #shop { width: 250px; }
-  .cat-rail { width: 58px; }
-  .cat-tab svg { width: 30px; height: 30px; }
+  #shop { width: 240px; }
+  .cat-col { width: 84px; }
+  .cat-card svg { width: 44px; height: 44px; }
 }
 
 /* מובייל: מדדים 2×2 */
